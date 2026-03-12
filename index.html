@@ -369,6 +369,7 @@ a:hover { color: #fff; }
   <!-- ═══ HOME ═══ -->
   <div id="page-home" style="display:flex; flex-direction:column; height:100%;">
     <div id="output" style="flex:1; overflow-y:auto; scrollbar-width:thin; padding-right:0.5em;"></div>
+    <div id="skip-hint" style="font-size:0.7em; color:rgba(80,180,80,0.45); text-align:right; letter-spacing:0.08em; text-shadow:0 0 1ex #3f3; padding-bottom:0.3em;">[SPACE] SKIP</div>
     <div id="home-menu">
       <!-- Portrait + Dialogue -->
       <div id="npc-panel">
@@ -549,7 +550,9 @@ var out = document.getElementById('output');
 var homeMenu = document.getElementById('home-menu');
 var pages = ['home','about','skills','projects','contact'];
 
-function rnd() { return (Math.random() * 100 + 15) | 0; }
+var skipIntro = false;
+
+function rnd() { return skipIntro ? 0 : (Math.random() * 100 + 15) | 0; }
 
 function typeLine(text, cls, cb) {
   var el = document.createElement('div');
@@ -578,7 +581,7 @@ function typeLines(lines, cb) {
       el.className = 'line blank';
       out.appendChild(el);
       out.scrollTop = out.scrollHeight;
-      setTimeout(step, 60);
+      setTimeout(step, skipIntro ? 0 : 60);
     } else {
       typeLine(l[0], l[1], step);
     }
@@ -604,9 +607,23 @@ var boot = [
   '',
 ];
 
-typeLines(boot, function() {
+var introFinished = false;
+function onIntroFinished() {
+  introFinished = true;
+  document.removeEventListener('keydown', onSpacebar);
+  var hint = document.getElementById('skip-hint');
+  if (hint) hint.remove();
   homeMenu.style.display = 'block';
-});
+}
+
+function onSpacebar(e) {
+  if (e.code === 'Space' && !introFinished) {
+    skipIntro = true;
+  }
+}
+document.addEventListener('keydown', onSpacebar);
+
+typeLines(boot, onIntroFinished);
 
 function goTo(name) {
   document.getElementById('page-home').style.display = 'none';
