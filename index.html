@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ROBCO INDUSTRIES TERMINAL</title>
+<style>
+
+  /* ── CRT effect ── */
+
+@keyframes blink {
+  0%,49% { border-right-color: transparent; }
+  50%,100% { border-right-color: currentColor; }
+}
+@keyframes scan {
+  0% { background-position: 0 -100vh; }
+  35%,100% { background-position: 0 100vh; }
+}
+@keyframes flicker {
+  0%,100% { opacity: 1; }
+  92% { opacity: 1; }
+  93% { opacity: 0.6; }
+  94% { opacity: 1; }
+  96% { opacity: 0.8; }
+  97% { opacity: 1; }
+}
+@keyframes pagein {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: #000; }
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1em;
+  animation: flicker 8s infinite;
+}
+#terminal {
+  border-radius: 1em;
+  background-color: #0a1a0a;
+  background-image: radial-gradient(ellipse 500% 100% at 50% 90%, transparent, #060f06);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 860px;
+  height: 90vh;
+  padding: 2em;
+  box-shadow: inset 0 0 10em 1em rgba(0,0,0,0.6), 0 0 40px rgba(0,255,0,0.08);
+  font-family: 'Courier New', monospace;
+  color: rgba(128,255,128,0.85);
+  position: relative;
+  overflow: hidden;
+}
+#terminal::before {
+  position: absolute; content: ""; display: block;
+  top: 0; left: 0; right: 0; bottom: 0; pointer-events: none;
+  background-image: linear-gradient(0deg, transparent 0%, rgba(32,128,32,0.15) 2%, rgba(32,128,32,0.6) 3%, rgba(32,128,32,0.15) 3%, transparent 100%);
+  background-repeat: no-repeat;
+  animation: scan 7.5s linear 0s infinite;
+  z-index: 10;
+}
+#terminal::after {
+  position: absolute; content: ""; display: block;
+  top: 0; left: 0; right: 0; bottom: 0; pointer-events: none;
+  background-image:
+    radial-gradient(ellipse 50% 15% at 50% 15%, rgba(255,255,255,0.04), transparent),
+    radial-gradient(ellipse 200% 20% at 50% 0%, rgba(0,0,0,0.4), transparent),
+    linear-gradient(0deg, rgba(0,0,0,0.15) 50%, transparent 50%);
+  background-size: 100%, 100%, 100% 0.25ch;
+  z-index: 10;
+}
+#output {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,200,0,0.3) transparent;
+  padding-right: 0.5em;
+}
+#output::-webkit-scrollbar { width: 4px; }
+#output::-webkit-scrollbar-thumb { background: rgba(0,200,0,0.3); border-radius: 2px; }
+
+/* ── shared line styles ── */
+.line {
+  display: block;
+  text-shadow: 0 0 1ex #3f3, 0 0 2px rgba(255,255,255,0.6);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+.line::before { content: "> "; }
+.line.np::before { content: ""; }
+.line.dim { color: rgba(80,180,80,0.6); }
+.line.bright { color: rgba(180,255,180,1); font-weight: bold; }
+.line.blank { min-height: 1.6em; }
+
+/* ── home menu ── */
+#home-menu { display: none; margin-top: 1em; }
+#home-menu .menu-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.7em;
+  margin-top: 0.5em;
+}
+
+/* ── NPC panel ── */
+#npc-panel {
+  display: flex;
+  gap: 1em;
+  border: 1px solid rgba(0,200,0,0.3);
+  padding: 0.75em;
+  background: rgba(0,30,0,0.3);
+  margin-bottom: 0.4em;
+}
+#portrait-frame {
+  position: relative;
+  flex-shrink: 0;
+  width: 160px;
+  height: 120px;
+  border: 1px solid rgba(0,200,0,0.5);
+  background: #000;
+  overflow: hidden;
+}
+#portrait-inner {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+}
+#portrait-placeholder {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 0.2em; width: 100%; height: 100%;
+}
+.ph-line {
+  font-size: 0.7em;
+  color: rgba(80,180,80,0.55);
+  text-shadow: 0 0 1ex #3f3;
+  letter-spacing: 0.1em;
+  display: block;
+  text-align: center;
+}
+/* CRT tint over portrait */
+#portrait-scanlines {
+  position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,0.18) 0px, rgba(0,0,0,0.18) 1px, transparent 1px, transparent 3px),
+              radial-gradient(ellipse 100% 100% at 50% 50%, rgba(0,200,0,0.08), rgba(0,0,0,0.4));
+}
+/* Corner brackets */
+.corner {
+  position: absolute; width: 10px; height: 10px;
+  border-color: rgba(128,255,128,0.7); border-style: solid;
+}
+.corner.tl { top: 3px; left: 3px;  border-width: 1px 0 0 1px; }
+.corner.tr { top: 3px; right: 3px; border-width: 1px 1px 0 0; }
+.corner.bl { bottom: 3px; left: 3px;  border-width: 0 0 1px 1px; }
+.corner.br { bottom: 3px; right: 3px; border-width: 0 1px 1px 0; }
+
+/* dialogue */
+#dialogue-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+  justify-content: center;
+}
+#dialogue-label {
+  font-size: 0.7em;
+  color: rgba(180,255,180,0.55);
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 1ex #3f3;
+}
+#dialogue-text {
+  font-size: 0.82em;
+  line-height: 1.55;
+  color: rgba(128,255,128,0.9);
+  text-shadow: 0 0 1ex #3f3, 0 0 2px rgba(255,255,255,0.4);
+  border-left: 2px solid rgba(0,200,0,0.35);
+  padding-left: 0.7em;
+}
+.menu-btn {
+  background: transparent;
+  border: 1px solid rgba(0,200,0,0.45);
+  color: rgba(128,255,128,0.85);
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+  padding: 0.55em 1em;
+  cursor: pointer;
+  text-shadow: 0 0 1ex #3f3;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  letter-spacing: 0.05em;
+  text-align: left;
+}
+.menu-btn:hover {
+  background: rgba(0,200,0,0.15);
+  color: #fff;
+  border-color: rgba(128,255,128,0.9);
+}
+
+/* ── pages ── */
+.page {
+  display: none;
+  flex-direction: column;
+  height: 100%;
+  animation: pagein 0.25s ease;
+}
+.page.active { display: flex; }
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  border-bottom: 1px solid rgba(0,200,0,0.3);
+  padding-bottom: 0.6em;
+  margin-bottom: 1em;
+  flex-shrink: 0;
+}
+.back-btn {
+  background: transparent;
+  border: 1px solid rgba(0,200,0,0.45);
+  color: rgba(128,255,128,0.85);
+  font-family: 'Courier New', monospace;
+  font-size: 0.8em;
+  padding: 0.3em 0.8em;
+  cursor: pointer;
+  text-shadow: 0 0 1ex #3f3;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.back-btn:hover { background: rgba(0,200,0,0.15); color: #fff; }
+.page-title {
+  font-size: 1em;
+  font-weight: bold;
+  color: rgba(180,255,180,1);
+  text-shadow: 0 0 1ex #3f3, 0 0 2px rgba(255,255,255,0.6);
+  letter-spacing: 0.08em;
+}
+.page-body {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,200,0,0.3) transparent;
+  padding-right: 0.4em;
+}
+.page-body::-webkit-scrollbar { width: 4px; }
+.page-body::-webkit-scrollbar-thumb { background: rgba(0,200,0,0.3); border-radius: 2px; }
+
+/* ── page content ── */
+.section-line {
+  display: block;
+  line-height: 1.65;
+  text-shadow: 0 0 1ex #3f3, 0 0 2px rgba(255,255,255,0.5);
+  white-space: pre-wrap;
+}
+.section-line::before { content: "> "; }
+.section-line.np::before { content: ""; }
+.section-line.dim { color: rgba(80,180,80,0.55); }
+.section-line.bright { color: rgba(200,255,200,1); font-weight: bold; }
+.blank-row { height: 1em; }
+
+/* ── about page ── */
+.about-block {
+  margin-bottom: 1.1em;
+}
+.about-heading {
+  font-size: 0.92em;
+  color: rgba(200,255,200,1);
+  font-weight: bold;
+  text-shadow: 0 0 1ex #3f3, 0 0 2px rgba(255,255,255,0.5);
+  margin-bottom: 0.2em;
+}
+.about-sub {
+  font-size: 0.85em;
+  color: rgba(128,255,128,0.75);
+  text-shadow: 0 0 1ex #3f3;
+}
+.about-role {
+  font-size: 0.88em;
+  color: rgba(200,255,200,1);
+  font-weight: bold;
+  text-shadow: 0 0 1ex #3f3;
+  margin-bottom: 0.3em;
+}
+.about-date {
+  color: rgba(128,255,128,0.55);
+  font-weight: normal;
+}
+.about-body {
+  font-size: 0.84em;
+  line-height: 1.7;
+  color: rgba(128,255,128,0.85);
+  text-shadow: 0 0 1ex #3f3, 0 0 2px rgba(255,255,255,0.4);
+  max-width: 72ch;
+}
+.about-divider {
+  font-size: 0.75em;
+  color: rgba(80,180,80,0.55);
+  letter-spacing: 0.1em;
+  border-top: 1px solid rgba(0,200,0,0.2);
+  padding-top: 0.6em;
+  margin-bottom: 1em;
+}
+.proj-card {
+  border: 1px solid rgba(0,180,0,0.3);
+  padding: 0.8em 1em;
+  margin-bottom: 0.9em;
+  background: rgba(0,50,0,0.2);
+}
+.proj-title { color: rgba(200,255,200,1); font-weight: bold; text-shadow: 0 0 1ex #3f3; display: block; margin-bottom: 0.3em; }
+.skill-label { color: rgba(180,255,180,0.7); }
+a { color: rgba(128,255,128,0.85); text-decoration: underline; }
+a:hover { color: #fff; }
+
+/* ── SPECIAL cards ── */
+.special-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75em;
+  padding: 0.25em 0;
+}
+.special-card {
+  border: 1px solid rgba(0,200,0,0.35);
+  background: rgba(0,40,0,0.3);
+  padding: 0.9em 1em 1em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3em;
+}
+.special-letter {
+  font-size: 2.4em;
+  font-weight: bold;
+  color: rgba(180,255,180,1);
+  text-shadow: 0 0 2ex #3f3, 0 0 4px rgba(255,255,255,0.6);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.special-name {
+  font-size: 0.65em;
+  letter-spacing: 0.15em;
+  color: rgba(128,255,128,0.6);
+  text-shadow: 0 0 1ex #3f3;
+  border-bottom: 1px solid rgba(0,200,0,0.25);
+  padding-bottom: 0.4em;
+  width: 100%;
+  text-align: center;
+  margin-bottom: 0.3em;
+}
+.special-list {
+  list-style: none;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+}
+.special-list li {
+  font-size: 0.78em;
+  color: rgba(128,255,128,0.85);
+  text-shadow: 0 0 1ex #3f3;
+  text-align: center;
+  line-height: 1.5;
+}
+.special-list li::before {
+  content: "· ";
+  color: rgba(0,200,0,0.4);
+}
+</style>
+</head>
+<body>
+<div id="terminal">
+
+  <!-- ═══ HOME ═══ -->
+  <div id="page-home" style="display:flex; flex-direction:column; height:100%;">
+    <div id="output" style="flex:1; overflow-y:auto; scrollbar-width:thin; padding-right:0.5em;"></div>
+    <div id="home-menu">
+      <!-- Portrait + Dialogue -->
+      <div id="npc-panel">
+        <div id="portrait-frame">
+          <div id="portrait-inner">
+            <img id="portrait-img" src="Mr_Morton.png" alt="" style="width:100%; height:100%; object-fit:cover; object-position:top;"/>
+            <div id="portrait-placeholder">
+              <span class="ph-line">[ NO SIGNAL ]</span>
+              <span class="ph-line dim">UPLOAD PORTRAIT</span>
+              <span class="ph-line dim">TO CONFIGURE</span>
+            </div>
+          </div>
+          <div id="portrait-scanlines"></div>
+          <div class="corner tl"></div>
+          <div class="corner tr"></div>
+          <div class="corner bl"></div>
+          <div class="corner br"></div>
+        </div>
+        <div id="dialogue-box">
+          <div id="dialogue-label">MORTON, A.T. //</div>
+          <div id="dialogue-text">Good day. Everything you need to know about me is accessible through this terminal. Select a category below to proceed.</div>
+        </div>
+      </div>
+      <!-- Menu -->
+      <div class="line dim" style="margin-top:0.8em;">SELECT FILE TO ACCESS:</div>
+      <div class="menu-grid">
+        <button class="menu-btn" onclick="goTo('about')">  [ 1 ]  ABOUT ME</button>
+        <button class="menu-btn" onclick="goTo('skills')">  [ 2 ]  SKILLS</button>
+        <button class="menu-btn" onclick="goTo('projects')">  [ 3 ]  PROJECTS</button>
+        <button class="menu-btn" onclick="goTo('contact')">  [ 4 ]  CONTACT</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ ABOUT ═══ -->
+  <div id="page-about" class="page">
+    <div class="page-header">
+      <button class="back-btn" onclick="goHome()">◄ BACK</button>
+      <span class="page-title">// PERSONNEL FILE: MORTON, ADRIAN T.</span>
+    </div>
+    <div class="page-body">
+      <div class="about-block">
+        <p class="about-heading">B.S. Computer Science — Florida International University</p>
+        <p class="about-heading" style="font-size:0.8em; opacity:0.75;">Minor in Mathematical Sciences</p>
+        <p class="about-sub">INIT Build Team Lead &nbsp;|&nbsp; Full-Stack Engineer &nbsp;|&nbsp; ML Engineer</p>
+      </div>
+      <div class="about-block">
+        <p class="about-body">Adrian Morton is a backend-first engineer with deep expertise in AI/ML integration and full-stack systems development. He leads INIT Build teams from architecture to deployment, solving real-world problems with efficient, modern engineering stacks.</p>
+      </div>
+      <div class="about-divider">// EXPERIENCE LOG</div>
+      <div class="about-block">
+        <p class="about-role">INIT Build — Team Lead <span class="about-date">[Spring 2026]</span></p>
+        <p class="about-body">Leading the development of NoteBud, an AI-powered RAG study companion built with LlamaIndex, Gemini, Next.js, FastAPI, PostgreSQL + pgvector, Docker, and Google Cloud. Designed a full-stack architecture to manage users, classes, notebooks, and source files end-to-end.</p>
+      </div>
+      <div class="about-block">
+        <p class="about-role">INIT Build — Team Lead <span class="about-date">[Fall 2025]</span></p>
+        <p class="about-body">Architected an end-to-end ML pipeline with CatBoost, LightGBM, and Temporal Fusion Transformer models. Owned all core backend services in Python, enforcing modular design, reproducible training runs, and rigorous cross-validation with metric tracking for time-series workloads.</p>
+      </div>
+      <div class="about-block">
+        <p class="about-role">AI4ALL — Fellow</p>
+        <p class="about-body">Built production-style ML models including Random Forest and XGBoost to forecast real-world signals with high predictive accuracy. Engineered features, performed hyperparameter tuning, and documented pipelines and results for future iteration.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SKILLS ═══ -->
+  <div id="page-skills" class="page">
+    <div class="page-header">
+      <button class="back-btn" onclick="goHome()">◄ BACK</button>
+      <span class="page-title">// SKILLS MANIFEST</span>
+    </div>
+    <div class="page-body">
+      <div class="special-grid">
+        <div class="special-card">
+          <div class="special-name">LANGUAGES</div>
+          <ul class="special-list">
+            <li>Python</li><li>C / C++</li><li>Java</li><li>SQL</li>
+            <li>TypeScript</li><li>JavaScript</li><li>Rust</li><li>Arduino</li>
+          </ul>
+        </div>
+        <div class="special-card">
+          <div class="special-name">ML / AI</div>
+          <ul class="special-list">
+            <li>PyTorch</li><li>TensorFlow</li><li>LlamaIndex</li><li>LangChain</li>
+            <li>Google ADK</li><li>Qiskit</li><li>NumPy</li><li>pandas</li>
+          </ul>
+        </div>
+        <div class="special-card">
+          <div class="special-name">WEB / BACKEND</div>
+          <ul class="special-list">
+            <li>FastAPI</li><li>Next.js</li><li>React</li><li>Node.js</li>
+            <li>Flask</li><li>RESTful API</li><li>Docker</li>
+          </ul>
+        </div>
+        <div class="special-card">
+          <div class="special-name">DATABASES</div>
+          <ul class="special-list">
+            <li>PostgreSQL</li><li>pgvector</li><li>Vector DBs</li><li>Apache Parquet</li>
+          </ul>
+        </div>
+        <div class="special-card">
+          <div class="special-name">CLOUD / TOOLS</div>
+          <ul class="special-list">
+            <li>Google Cloud</li><li>Git</li><li>Linux</li><li>Postman</li><li>Wireshark</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PROJECTS ═══ -->
+  <div id="page-projects" class="page">
+    <div class="page-header">
+      <button class="back-btn" onclick="goHome()">◄ BACK</button>
+      <span class="page-title">// PROJECT DOSSIER</span>
+    </div>
+    <div class="page-body">
+      <div class="blank-row"></div>
+      <div class="proj-card">
+        <span class="proj-title">> NOTEBUD — INIT Build Spring 2026</span>
+        <span class="section-line np">AI-powered class notebook & study companion. RAG pipeline answers student</span>
+        <span class="section-line np">questions with citations from their own course materials.</span>
+        <div class="blank-row" style="height:0.4em"></div>
+        <span class="section-line dim np">Stack    : Next.js • FastAPI • PostgreSQL + pgvector • Docker • Google Cloud</span>
+        <span class="section-line dim np">Features : LlamaIndex/Gemini RAG • PDF ingestion • groundedness scoring</span>
+      </div>
+      <div class="proj-card">
+        <span class="proj-title">> PRENERGYZE — INIT Build Fall 2025</span>
+        <span class="section-line np">Predictive system for electric utility grid load peaks enabling dynamic</span>
+        <span class="section-line np">pricing and resource allocation.</span>
+        <div class="blank-row" style="height:0.4em"></div>
+        <span class="section-line dim np">Stack    : PyTorch • CatBoost • LightGBM • Temporal Fusion Transformer</span>
+        <span class="section-line dim np">Perf.    : R² = 0.9434 on TFT model</span>
+      </div>
+      <div class="proj-card">
+        <span class="proj-title">> HARDLAUNCH — Sharkbyte 2025</span>
+        <span class="section-line np">Agentic AI workbench transforming founder ideas into structured business</span>
+        <span class="section-line np">strategies through conversational intake.</span>
+        <div class="blank-row" style="height:0.4em"></div>
+        <span class="section-line dim np">Stack    : Google ADK • Gemini 2.5 • FastAPI • LlamaIndex</span>
+        <span class="section-line dim np">Features : Multi-agent system • session state mgmt • RAG + vector search</span>
+      </div>
+      <div class="proj-card">
+        <span class="proj-title">> OUTAGENT — Shellhacks 2025</span>
+        <span class="section-line np">High-throughput backend for utility grid ops with sub-minute situational</span>
+        <span class="section-line np">awareness and hourly load forecasting.</span>
+        <div class="blank-row" style="height:0.4em"></div>
+        <span class="section-line dim np">Stack    : FastAPI • Apache Parquet • PyTorch • LightGBM</span>
+        <span class="section-line dim np">Features : Automated retraining • 12-horizon forecasting • custom feature eng.</span>
+      </div>
+      <div class="blank-row"></div>
+    </div>
+  </div>
+
+  <!-- ═══ CONTACT ═══ -->
+  <div id="page-contact" class="page">
+    <div class="page-header">
+      <button class="back-btn" onclick="goHome()">◄ BACK</button>
+      <span class="page-title">// CONTACT UPLINK</span>
+    </div>
+    <div class="page-body">
+      <div class="blank-row"></div>
+      <span class="section-line np">EMAIL    :  <a href="mailto:atmorton04@gmail.com">atmorton04@gmail.com</a></span>
+      <span class="section-line np">PHONE    :  786-897-7008</span>
+      <span class="section-line np">GITHUB   :  <a href="https://github.com/Bomoga" target="_blank">github.com/Bomoga</a></span>
+      <span class="section-line np">LINKEDIN :  <a href="https://www.linkedin.com/in/adrian-thomas-morton/" target="_blank">linkedin.com/in/adrian-thomas-morton</a></span>
+      <div class="blank-row"></div>
+      <span class="section-line dim np">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+      <span class="section-line dim np">// TRANSMISSION READY. AWAITING RESPONSE.</span>
+      <div class="blank-row"></div>
+    </div>
+  </div>
+
+</div><!-- end #terminal -->
+
+<script>
+var out = document.getElementById('output');
+var homeMenu = document.getElementById('home-menu');
+var pages = ['home','about','skills','projects','contact'];
+
+function rnd() { return (Math.random() * 100 + 15) | 0; }
+
+function typeLine(text, cls, cb) {
+  var el = document.createElement('div');
+  var hasPrefix = !(cls && cls.includes('np'));
+  el.className = 'line' + (cls ? ' ' + cls : '');
+  out.appendChild(el);
+  var full = (hasPrefix ? '> ' : '') + text;
+  var i = 0;
+  function next() {
+    if (i < full.length) {
+      el.textContent = full.slice(0, ++i);
+      out.scrollTop = out.scrollHeight;
+      setTimeout(next, rnd());
+    } else { if (cb) cb(); }
+  }
+  next();
+}
+
+function typeLines(lines, cb) {
+  var i = 0;
+  function step() {
+    if (i >= lines.length) { if (cb) cb(); return; }
+    var l = lines[i++];
+    if (l === '') {
+      var el = document.createElement('div');
+      el.className = 'line blank';
+      out.appendChild(el);
+      out.scrollTop = out.scrollHeight;
+      setTimeout(step, 60);
+    } else {
+      typeLine(l[0], l[1], step);
+    }
+  }
+  step();
+}
+
+var boot = [
+  ['ROBCO INDUSTRIES (TM) TERMLINK PROTOCOL', 'bright'],
+  ['EMPLOYEE RECORD INTERFACE v2.3.0', ''],
+  '',
+  ['INITIALIZING...', 'dim'],
+  ['MEMORY CHECK........OK', 'dim'],
+  ['BIOS LOADED.........OK', 'dim'],
+  ['UPLINK ESTABLISHED..OK', 'dim'],
+  '',
+  ['ACCESSING PERSONNEL DATABASE...', 'dim'],
+  ['RECORD FOUND: MORTON, ADRIAN T.', ''],
+  '',
+  ['WELCOME, VAULT DWELLER.', 'bright'],
+  ['THIS TERMINAL CONTAINS CLASSIFIED PERSONNEL DATA.', ''],
+  ['PLEASE SELECT A DOSSIER CATEGORY BELOW.', ''],
+  '',
+];
+
+typeLines(boot, function() {
+  homeMenu.style.display = 'block';
+});
+
+function goTo(name) {
+  document.getElementById('page-home').style.display = 'none';
+  pages.forEach(function(p) {
+    var el = document.getElementById('page-' + p);
+    if (el) el.classList.remove('active');
+  });
+  var target = document.getElementById('page-' + name);
+  if (target) target.classList.add('active');
+}
+
+function goHome() {
+  pages.forEach(function(p) {
+    var el = document.getElementById('page-' + p);
+    if (el) el.classList.remove('active');
+  });
+  var home = document.getElementById('page-home');
+  home.style.display = 'flex';
+}
+</script>
+</body>
+</html>
