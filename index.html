@@ -95,7 +95,8 @@ body {
 .line.blank { min-height: 1.6em; }
 
 /* ── home menu ── */
-#home-menu { display: none; margin-top: 1em; }
+#home-menu { display: none; margin-top: 1em; opacity: 0; }
+#home-menu.visible { animation: pagein 0.45s ease forwards; }
 #home-menu .menu-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -611,6 +612,7 @@ function onIntroFinished() {
   var hint = document.getElementById('skip-hint');
   if (hint) hint.remove();
   homeMenu.style.display = 'block';
+  requestAnimationFrame(function() { homeMenu.classList.add('visible'); });
 }
 
 function onSpacebar(e) {
