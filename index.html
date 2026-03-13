@@ -95,7 +95,7 @@ body {
 .line.blank { min-height: 1.6em; }
 
 /* ── home menu ── */
-#home-menu { display: none; margin-top: 1em; opacity: 0; }
+#home-menu { display: none; flex-direction: column; margin-top: 1em; opacity: 0; }
 #home-menu.visible { animation: pagein 0.45s ease forwards; }
 #home-menu .menu-grid {
   display: grid;
@@ -106,18 +106,21 @@ body {
 
 /* ── NPC panel ── */
 #npc-panel {
+  flex: 1;
   display: flex;
+  align-items: stretch;
   gap: 1em;
   border: 1px solid rgba(0,200,0,0.3);
   padding: 0.75em;
   background: rgba(0,30,0,0.3);
   margin-bottom: 0.4em;
+  min-height: 0;
 }
 #portrait-frame {
   position: relative;
   flex-shrink: 0;
   width: 112px;
-  height: 120px;
+  min-height: 120px;
   border: 1px solid rgba(0,200,0,0.5);
   background: #000;
   overflow: hidden;
@@ -611,7 +614,9 @@ function onIntroFinished() {
   document.removeEventListener('keydown', onSpacebar);
   var hint = document.getElementById('skip-hint');
   if (hint) hint.remove();
-  homeMenu.style.display = 'block';
+  out.style.flex = '0 0 auto';
+  homeMenu.style.display = 'flex';
+  homeMenu.style.flex = '1';
   requestAnimationFrame(function() { homeMenu.classList.add('visible'); });
 }
 
