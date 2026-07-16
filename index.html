@@ -3,7 +3,9 @@
 <head>
     <link rel="icon" type="image/png" href="chip.png">
 <meta charset="UTF-8">
-<title>MortCo Termlink Protocol</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Adrian T. Morton — software engineer specializing in backend and full-stack systems, with AI/ML integration experience. B.S. Computer Science, Florida International University. Software Engineering Intern at Genuine Labs; Embedded SWE Intern at Portable Diagnostic Systems.">
+<title>Adrian T. Morton — Software Engineer</title>
 <style>
 
   /* ── CRT effect ── */
@@ -366,6 +368,28 @@ a:hover { color: #fff; }
   content: "· ";
   color: rgba(0,200,0,0.4);
 }
+
+/* ── experience bullets ── */
+.about-bullets {
+  list-style: none;
+  font-size: 0.84em;
+  line-height: 1.7;
+  color: rgba(128,255,128,0.85);
+  text-shadow: 0 0 1ex #3f3, 0 0 2px rgba(255,255,255,0.4);
+  max-width: 72ch;
+}
+.about-bullets li { padding-left: 1.2em; text-indent: -1.2em; }
+.about-bullets li::before { content: "— "; color: rgba(0,200,0,0.5); }
+
+/* ── responsive ── */
+@media (max-width: 640px) {
+  body { padding: 0.4em; }
+  #terminal { height: 96vh; padding: 1.1em; }
+  #npc-panel { flex-direction: column; }
+  #portrait-frame { width: 100%; min-height: 140px; }
+  .menu-grid { grid-template-columns: 1fr; }
+  .special-grid { grid-template-columns: repeat(2, 1fr); }
+}
 </style>
 </head>
 <body>
@@ -374,7 +398,7 @@ a:hover { color: #fff; }
   <!-- ═══ HOME ═══ -->
   <div id="page-home" style="display:flex; flex-direction:column; height:100%;">
     <div id="output" style="flex:1; overflow-y:auto; scrollbar-width:thin; padding-right:0.5em;"></div>
-    <div id="skip-hint" style="font-size:0.7em; color:rgba(80,180,80,0.45); text-align:right; letter-spacing:0.08em; text-shadow:0 0 1ex #3f3; padding-bottom:0.3em;">[SPACE] SKIP</div>
+    <div id="skip-hint" style="font-size:0.7em; color:rgba(80,180,80,0.45); text-align:right; letter-spacing:0.08em; text-shadow:0 0 1ex #3f3; padding-bottom:0.3em;">[SPACE / CLICK] SKIP</div>
     <div id="home-menu">
       <!-- Portrait + Dialogue -->
       <div id="npc-panel">
@@ -390,16 +414,17 @@ a:hover { color: #fff; }
         </div>
         <div id="dialogue-box">
           <div id="dialogue-label">ADRIAN T. MORTON //</div>
-          <div id="dialogue-text"> I trust that you are authorized to view this, yes? Anyways, I'm Adrian T. Morton. Sole proprietor of this terminal uplink system. I'm a B.S. Computer Science undergraduate with experience primarily in Python, C/C++, and Java earned through a wide variety of academic and personal projects. 
-                                   I'm passionate about the future of software engineering and how AI/ML plays into it, actively building skills in model development and integration (generative and predictive), back-end engineering with full-stack flexibility, and optimized system design to construct impactful modern solutions to modern problems.</div>
+          <div id="dialogue-text">Adrian T. Morton — backend-focused software engineer. B.S. Computer Science at Florida International University. Currently building LLM evaluation infrastructure as a Software Engineering Intern at Genuine Labs, and designing an over-the-air update system for a biotech diagnostic device at Portable Diagnostic Systems. I build backend systems, full-stack applications, and the ML pipelines and infrastructure that prove they work.</div>
         </div>
       </div>
+      <!-- Quick uplinks: contact reachable without navigation -->
+      <div class="line dim np" style="margin-top:0.6em;">UPLINKS :  <a href="mailto:atmorton04@gmail.com">EMAIL</a> · <a href="https://github.com/Bomoga" target="_blank">GITHUB</a> · <a href="https://www.linkedin.com/in/adrian-thomas-morton/" target="_blank">LINKEDIN</a></div>
       <!-- Menu -->
       <div class="line dim" style="margin-top:0.8em;">SELECT FILE TO ACCESS:</div>
       <div class="menu-grid">
-        <button class="menu-btn" onclick="goTo('about')">  [ 1 ]  ABOUT ME</button>
-        <button class="menu-btn" onclick="goTo('skills')">  [ 2 ]  SKILLS</button>
-        <button class="menu-btn" onclick="goTo('projects')">  [ 3 ]  PROJECTS</button>
+        <button class="menu-btn" onclick="goTo('projects')">  [ 1 ]  PROJECTS</button>
+        <button class="menu-btn" onclick="goTo('about')">  [ 2 ]  EXPERIENCE</button>
+        <button class="menu-btn" onclick="goTo('skills')">  [ 3 ]  SKILLS</button>
         <button class="menu-btn" onclick="goTo('contact')">  [ 4 ]  CONTACT</button>
       </div>
     </div>
@@ -415,23 +440,48 @@ a:hover { color: #fff; }
       <div class="about-block">
         <p class="about-heading">B.S. Computer Science — Florida International University</p>
         <p class="about-heading" style="font-size:0.8em; opacity:0.75;">Minor in Mathematical Sciences</p>
-        <p class="about-sub">INIT Build Team Lead &nbsp;|&nbsp; Full-Stack Engineer &nbsp;|&nbsp; ML Engineer</p>
+        <p class="about-sub">SWE Intern @ Genuine Labs &nbsp;|&nbsp; Embedded SWE Intern @ PDS &nbsp;|&nbsp; INIT Build Team Lead</p>
       </div>
       <div class="about-block">
-        <p class="about-body">Adrian Morton is a backend-first engineer with deep expertise in AI/ML integration and full-stack systems development. He leads INIT Build teams from architecture to deployment, solving real-world problems with efficient, modern engineering stacks.</p>
+        <p class="about-body">Backend-first software engineer with full-stack range and hands-on AI/ML integration experience. Currently building LLM evaluation infrastructure at Genuine Labs and designing an over-the-air update system for a biotech diagnostic device at Portable Diagnostic Systems. Leads INIT Build teams from architecture to deployment.</p>
       </div>
       <div class="about-divider">// EXPERIENCE LOG</div>
       <div class="about-block">
+        <p class="about-role">Genuine Labs — Software Engineering Intern <span class="about-date">[May 2026 — Present]</span></p>
+        <ul class="about-bullets">
+          <li>Designed and shipped a TypeScript eval runner that executes test suites against a live AI chat service, grades results, and produces structured pass/fail reports.</li>
+          <li>Built seeded Firebase emulator test environments, deterministic graders, and multi-turn conversation case support.</li>
+          <li>Adapted the pipeline across model providers via OpenRouter and ran the team's first eval baselines.</li>
+        </ul>
+      </div>
+      <div class="about-block">
+        <p class="about-role">Portable Diagnostic Systems — Embedded Software Engineering Intern <span class="about-date">[Summer 2026]</span></p>
+        <ul class="about-bullets">
+          <li>Designing the over-the-air update system for a portable diagnostic device running embedded Linux at a seed-stage biotech startup.</li>
+          <li>Authored the OTA proposal and phased implementation plan: signed update bundles, A/B partitioning with automatic rollback, and durable audit logging.</li>
+          <li>Engineered for intermittent connectivity, persistent state decoupling, and fail-safe operation in the field.</li>
+        </ul>
+      </div>
+      <div class="about-block">
         <p class="about-role">INIT Build — Team Lead <span class="about-date">[Spring 2026]</span></p>
-        <p class="about-body">Leading the development of NoteBud, an AI-powered RAG study companion built with LlamaIndex, Gemini, Next.js, FastAPI, PostgreSQL + pgvector, Docker, and Google Cloud. Designed a full-stack architecture to manage users, classes, notebooks, and source files end-to-end.</p>
+        <ul class="about-bullets">
+          <li>Leading development of NoteBud, an AI-powered RAG study companion (LlamaIndex, Gemini, Next.js, FastAPI, PostgreSQL + pgvector, Docker, Google Cloud).</li>
+          <li>Designed the full-stack architecture managing users, classes, notebooks, and source files end-to-end.</li>
+        </ul>
       </div>
       <div class="about-block">
         <p class="about-role">INIT Build — Team Lead <span class="about-date">[Fall 2025]</span></p>
-        <p class="about-body">Architected an end-to-end ML pipeline with CatBoost, LightGBM, and Temporal Fusion Transformer models. Owned all core backend services in Python, enforcing modular design, reproducible training runs, and rigorous cross-validation with metric tracking for time-series workloads.</p>
+        <ul class="about-bullets">
+          <li>Architected an end-to-end ML pipeline with CatBoost, LightGBM, and Temporal Fusion Transformer models.</li>
+          <li>Owned all core backend services in Python: modular design, reproducible training runs, and rigorous cross-validation with metric tracking for time-series workloads.</li>
+        </ul>
       </div>
       <div class="about-block">
         <p class="about-role">AI4ALL — Fellow</p>
-        <p class="about-body">Built production-style ML models including Random Forest and XGBoost to forecast real-world signals with high predictive accuracy. Engineered features, performed hyperparameter tuning, and documented pipelines and results for future iteration.</p>
+        <ul class="about-bullets">
+          <li>Built production-style ML models including Random Forest and XGBoost to forecast real-world signals with high predictive accuracy.</li>
+          <li>Engineered features, performed hyperparameter tuning, and documented pipelines and results for future iteration.</li>
+        </ul>
       </div>
     </div>
   </div>
@@ -455,7 +505,7 @@ a:hover { color: #fff; }
           <div class="special-name">ML / AI</div>
           <ul class="special-list">
             <li>PyTorch</li><li>TensorFlow</li><li>LlamaIndex</li><li>LangChain</li>
-            <li>Google ADK</li><li>Qiskit</li><li>NumPy</li><li>pandas</li>
+            <li>Google ADK</li><li>OpenRouter</li><li>Qiskit</li><li>NumPy</li><li>pandas</li>
           </ul>
         </div>
         <div class="special-card">
@@ -474,7 +524,7 @@ a:hover { color: #fff; }
         <div class="special-card">
           <div class="special-name">CLOUD / TOOLS</div>
           <ul class="special-list">
-            <li>Google Cloud</li><li>Git</li><li>Linux</li><li>Postman</li><li>Wireshark</li>
+            <li>Google Cloud</li><li>Firebase</li><li>Git</li><li>Linux</li><li>Postman</li><li>Wireshark</li>
           </ul>
         </div>
       </div>
@@ -489,11 +539,24 @@ a:hover { color: #fff; }
     </div>
     <div class="page-body">
       <div class="blank-row"></div>
+      <span class="section-line dim np">Full source & more at <a href="https://github.com/Bomoga" target="_blank">github.com/Bomoga</a></span>
+      <div class="blank-row" style="height:0.5em"></div>
+      <div class="proj-card">
+        <span class="proj-title">> EVAL PIPELINE — Genuine Labs 2026</span>
+        <span class="section-line np">Automated evaluation harness for an AI chat product. Executes eval suites</span>
+        <span class="section-line np">against the live chat service, grades each result, and produces structured</span>
+        <span class="section-line np">pass/fail reports.</span>
+        <div class="blank-row" style="height:0.4em"></div>
+        <span class="section-line dim np">Role     : Intern project — designed and shipped end-to-end</span>
+        <span class="section-line dim np">Stack    : TypeScript • Node.js • Firebase emulator • OpenRouter</span>
+        <span class="section-line dim np">Features : deterministic graders • multi-turn cases • seeded test environments</span>
+      </div>
       <div class="proj-card">
         <span class="proj-title">> NOTEBUD — INIT Build Spring 2026</span>
         <span class="section-line np">AI-powered class notebook & study companion. RAG pipeline answers student</span>
         <span class="section-line np">questions with citations from their own course materials.</span>
         <div class="blank-row" style="height:0.4em"></div>
+        <span class="section-line dim np">Role     : Team Lead — architecture to deployment</span>
         <span class="section-line dim np">Stack    : Next.js • FastAPI • PostgreSQL + pgvector • Docker • Google Cloud</span>
         <span class="section-line dim np">Features : LlamaIndex/Gemini RAG • PDF ingestion • groundedness scoring</span>
       </div>
@@ -502,8 +565,17 @@ a:hover { color: #fff; }
         <span class="section-line np">Predictive system for electric utility grid load peaks enabling dynamic</span>
         <span class="section-line np">pricing and resource allocation.</span>
         <div class="blank-row" style="height:0.4em"></div>
+        <span class="section-line dim np">Role     : Team Lead — ML pipeline & backend services</span>
         <span class="section-line dim np">Stack    : PyTorch • CatBoost • LightGBM • Temporal Fusion Transformer</span>
         <span class="section-line dim np">Perf.    : R² = 0.9434 on TFT model</span>
+      </div>
+      <div class="proj-card">
+        <span class="proj-title">> OUTAGENT — Shellhacks 2025</span>
+        <span class="section-line np">High-throughput backend for utility grid ops with sub-minute situational</span>
+        <span class="section-line np">awareness and hourly load forecasting.</span>
+        <div class="blank-row" style="height:0.4em"></div>
+        <span class="section-line dim np">Stack    : FastAPI • Apache Parquet • PyTorch • LightGBM</span>
+        <span class="section-line dim np">Features : Automated retraining • 12-horizon forecasting • custom feature eng.</span>
       </div>
       <div class="proj-card">
         <span class="proj-title">> HARDLAUNCH — Sharkbyte 2025</span>
@@ -514,12 +586,13 @@ a:hover { color: #fff; }
         <span class="section-line dim np">Features : Multi-agent system • session state mgmt • RAG + vector search</span>
       </div>
       <div class="proj-card">
-        <span class="proj-title">> OUTAGENT — Shellhacks 2025</span>
-        <span class="section-line np">High-throughput backend for utility grid ops with sub-minute situational</span>
-        <span class="section-line np">awareness and hourly load forecasting.</span>
+        <span class="proj-title">> BENJI — Software Engineering II, Summer 2026</span>
+        <span class="section-line np">Payroll management system for a local STEM education center. Streamlines</span>
+        <span class="section-line np">logging employee hours, approving timesheets, computing pay, and generating</span>
+        <span class="section-line np">payroll records across seven core modules.</span>
         <div class="blank-row" style="height:0.4em"></div>
-        <span class="section-line dim np">Stack    : FastAPI • Apache Parquet • PyTorch • LightGBM</span>
-        <span class="section-line dim np">Features : Automated retraining • 12-horizon forecasting • custom feature eng.</span>
+        <span class="section-line dim np">Team     : 3-person academic team • full SDLC deliverables</span>
+        <span class="section-line dim np">Features : timesheet approval workflow • pay computation • payroll records</span>
       </div>
       <div class="blank-row"></div>
     </div>
@@ -553,7 +626,7 @@ var pages = ['home','about','skills','projects','contact'];
 
 var skipIntro = false;
 
-function rnd() { return skipIntro ? 0 : (Math.random() * 100 + 15) | 0; }
+function rnd() { return skipIntro ? 0 : (Math.random() * 22 + 8) | 0; }
 
 function typeLine(text, cls, cb) {
   var el = document.createElement('div');
@@ -582,7 +655,7 @@ function typeLines(lines, cb) {
       el.className = 'line blank';
       out.appendChild(el);
       out.scrollTop = out.scrollHeight;
-      setTimeout(step, skipIntro ? 0 : 60);
+      setTimeout(step, skipIntro ? 0 : 40);
     } else {
       typeLine(l[0], l[1], step);
     }
@@ -594,25 +667,18 @@ var boot = [
   ['MORTCO INDUSTRIES (TM) TERMLINK PROTOCOL', 'bright'],
   ['EMPLOYEE RECORD INTERFACE v2.3.0', ''],
   '',
-  ['INITIALIZING...', 'dim'],
-  ['MEMORY CHECK........OK', 'dim'],
-  ['BIOS LOADED.........OK', 'dim'],
-  ['NEURAL MAP LOADED...OK', 'dim'],
   ['UPLINK ESTABLISHED..OK', 'dim'],
-  '',
-  ['ACCESSING PERSONNEL DATABASE...', 'dim'],
-  ['RECORD FOUND: MORTON, ADRIAN T.', ''],
+  ['RECORD FOUND: MORTON, ADRIAN T. — SOFTWARE ENGINEER', ''],
   '',
   ['WELCOME, AUTHORIZED GUEST.', 'bright'],
-  ['THIS TERMINAL CONTAINS CLASSIFIED PERSONNEL NEURAL DATA.', ''],
-  ['PLEASE SELECT A DATABASE CATEGORY BELOW.', ''],
   '',
 ];
 
 var introFinished = false;
 function onIntroFinished() {
   introFinished = true;
-  document.removeEventListener('keydown', onSpacebar);
+  document.removeEventListener('keydown', onSkip);
+  document.removeEventListener('pointerdown', onSkip);
   var hint = document.getElementById('skip-hint');
   if (hint) hint.remove();
   out.style.flex = '0 0 auto';
@@ -621,12 +687,13 @@ function onIntroFinished() {
   requestAnimationFrame(function() { homeMenu.classList.add('visible'); });
 }
 
-function onSpacebar(e) {
-  if (e.code === 'Space' && !introFinished) {
+function onSkip(e) {
+  if (!introFinished && (e.type !== 'keydown' || e.code === 'Space')) {
     skipIntro = true;
   }
 }
-document.addEventListener('keydown', onSpacebar);
+document.addEventListener('keydown', onSkip);
+document.addEventListener('pointerdown', onSkip);
 
 typeLines(boot, onIntroFinished);
 
