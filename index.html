@@ -87,6 +87,8 @@ img { max-width: 100%; }
 .eyebrow { font-family: var(--mono); font-size: 14px; letter-spacing: 0.06em; color: var(--accent); margin: 0; }
 .hero h1 { margin: 0; font-family: var(--mono); font-weight: 600; font-size: clamp(30px, 4.4vw, 54px); line-height: 1.1; letter-spacing: -0.01em; color: var(--text-strong); }
 .hero-sub { margin: 0; font-size: 19px; color: #b9d6b4; max-width: 640px; }
+.status { display: inline-flex; align-self: flex-start; align-items: center; gap: 10px; margin: 0; border: 1px solid var(--line); background: #0a150a; padding: 8px 14px; font-family: var(--mono); font-size: 14px; color: var(--text-strong); }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: 0 0 auto; box-shadow: 0 0 6px var(--accent); }
 .cta-row { display: flex; flex-wrap: wrap; gap: 12px; padding-top: 6px; }
 .mobile-id { display: none; }
 
@@ -178,6 +180,8 @@ footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12
   .hero-body { gap: 16px; }
   .hero h1 { font-size: 27px; line-height: 1.15; }
   .hero-sub { font-size: 16px; }
+  .status { font-size: 13px; padding: 8px 12px; align-items: flex-start; }
+  .status-dot { margin-top: 6px; }
   .hero .eyebrow { display: none; }
   .cta-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .cta-row .btn { padding: 0 10px; font-size: 14px; }
@@ -239,6 +243,7 @@ footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12
       <p class="eyebrow">// PERSONNEL FILE — SOFTWARE ENGINEER</p>
       <h1 id="hero-h">Backend engineer building LLM evaluation and device-update infrastructure.</h1>
       <p class="hero-sub">Adrian T. Morton — B.S. Computer Science at FIU, graduating May 2027. Currently a software engineering intern at Genuine Labs and Portable Diagnostic Systems.</p>
+      <p class="status"><span class="status-dot" aria-hidden="true"></span><span>STATUS: Open to new-grad SWE roles (from May 2027) · Spring 2027 internships</span></p>
       <div class="cta-row">
         <a class="btn btn-primary" href="mailto:atmorton04@gmail.com">Email me</a>
         <a class="btn btn-outline" href="AdrianMortonResume.pdf">Download résumé</a>
