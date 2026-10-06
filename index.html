@@ -109,7 +109,7 @@ section[id] { scroll-margin-top: 70px; }
 
 /* Featured projects */
 .cards { display: flex; flex-wrap: wrap; gap: 20px; }
-.card { flex: 1 1 320px; min-width: 0; border: 1px solid var(--line); background: var(--panel); padding: 26px; display: flex; flex-direction: column; gap: 14px; }
+.card { flex: 1 1 420px; min-width: 0; border: 1px solid var(--line); background: var(--panel); padding: 26px; display: flex; flex-direction: column; gap: 14px; }
 .card-tag { font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em; color: var(--accent); }
 .card h3 { margin: 0; font-family: var(--mono); font-size: 24px; font-weight: 600; color: var(--text-strong); }
 .card p { margin: 0; font-size: 16px; color: var(--text-body); }
@@ -291,14 +291,17 @@ footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12
         <div class="card-proof">▸ ~1,890 tests · 24-app seeded-defect corpus</div>
         <ul class="chips" aria-label="Stack"><li>TypeScript</li><li>Next.js</li><li>Express</li><li>Prisma</li><li>GitHub Actions</li></ul>
       </article>
+      <article class="card">
+        <div class="card-tag">INIT BUILD · SPRING 2026 · TEAM LEAD</div>
+        <h3>NoteBud</h3>
+        <p>AI class notebook that answers student questions with citations from their own course materials. A study workspace with notes, documents, chat and a linked-notebook graph in one Next.js app.</p>
+        <div class="card-role"><b>My role: </b>Team Lead. Built most of the Next.js frontend and designed the full-stack architecture behind it.</div>
+        <div class="card-proof">▸ Streaming chat with inline citations · interactive d3-force notebook graph · Tiptap editor with slash commands</div>
+        <ul class="chips" aria-label="Stack"><li>Next.js</li><li>React 19</li><li>TypeScript</li><li>Tailwind</li><li>TanStack Query</li><li>Tiptap</li><li>d3-force</li><li>FastAPI</li><li>Neo4j</li></ul>
+      </article>
     </div>
 
     <ul class="more">
-      <li>
-        <div class="more-name">NoteBud<span>INIT Build · Spring 2026 · Team Lead</span></div>
-        <div class="more-what">RAG study companion that answers questions with citations from a student’s own course materials.</div>
-        <div class="more-stack">Next.js · FastAPI · Neo4j · LlamaIndex · Gemini</div>
-      </li>
       <li>
         <div class="more-name">PreNergyze<span>INIT Build · Fall 2025 · Team Lead</span></div>
         <div class="more-what">Forecasts electric-grid load peaks for dynamic pricing. Best model R² = 0.9434 (Temporal Fusion Transformer).</div>
