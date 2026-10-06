@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/png" href="chip.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Adrian T. Morton — software engineer specializing in backend and full-stack systems, with AI/ML integration experience. B.S. Computer Science, Florida International University. Software Engineering Intern at Genuine Labs and Portable Diagnostic Systems. 1st Place, Microsoft Sponsor Challenge at ShellHacks X.">
+<title>Adrian T. Morton — Software Engineer</title>
+<style>
+
+  /* ── CRT effect ── */
+
+@keyframes blink {
+  0%,49% { border-right-color: transparent; }
+  50%,100% { border-right-color: currentColor; }
+}
+@keyframes scan {
+  0% { background-position: 0 -100vh; }
+  35%,100% { background-position: 0 100vh; }
+}
+@keyframes flicker {
+  0%,100% { opacity: 1; }
+  92% { opacity: 1; }
+  93% { opacity: 0.6; }
+  94% { opacity: 1; }
+  96% { opacity: 0.8; }
+  97% { opacity: 1; }
+}
+@keyframes pagein {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+html, body { height: 100%; background: #000; }
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1em;
+  animation: flicker 8s infinite;
+}
+#terminal {
+  border-radius: 1em;
+  background-color: #0a1a0a;
+  background-image: radial-gradient(ellipse 500% 100% at 50% 90%, transparent, #060f06);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 860px;
+  /* dvh tracks the visible area on mobile browsers (vh includes the hidden address bar) */
+  height: 90vh;
+  height: 90dvh;
+  padding: 1.4em;
+  box-shadow: inset 0 0 10em 1em rgba(0,0,0,0.6), 0 0 40px rgba(0,255,0,0.08);
+  font-family: 'Courier New', monospace;
+  color: rgba(128,255,128,0.85);
+  position: relative;
+  overflow: hidden;
+}
+#terminal::before {
+  position: absolute; content: ""; display: block;
+  top: 0; left: 0; right: 0; bottom: 0; pointer-events: none;
+  background-image: linear-gradient(0deg, transparent 0%, rgba(32,128,32,0.15) 2%, rgba(32,128,32,0.6) 3%, rgba(32,128,32,0.15) 3%, transparent 100%);
+  background-repeat: no-repeat;
+  animation: scan 7.5s linear 0s infinite;
+  z-index: 10;
+}
+#terminal::after {
+  position: absolute; content: ""; display: block;
+  top: 0; left: 0; right: 0; bottom: 0; pointer-events: none;
+  background-image:
+    radial-gradient(ellipse 50% 15% at 50% 15%, rgba(255,255,255,0.04), transparent),
+    radial-gradient(ellipse 200% 20% at 50% 0%, rgba(0,0,0,0.4), transparent),
+    linear-gradient(0deg, rgba(0,0,0,0.15) 50%, transparent 50%);
+  background-size: 100%, 100%, 100% 0.25ch;
+  z-index: 10;
+}
+#output {
+  flex: 1;
+  max-height: 20vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,200,0,0.3) transparent;
+  padding-right: 0.5em;
+}
+#output::-webkit-scrollbar { width: 4px; }
+#output::-webkit-scrollbar-thumb { background: rgba(0,200,0,0.3); border-radius: 2px; }
+
+/* ── shared line styles ── */
+.line {
+  display: block;
+  text-shadow: 0 0 1ex #3f3, 0 0 2px rgba(255,255,255,0.6);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+.line::before { content: "> "; }
+.line.np::before, .line.blank::before { content: ""; }
+.line.dim { color: rgba(80,180,80,0.6); }
+.line.bright { color: rgba(180,255,180,1); font-weight: bold; }
+.line.blank { min-height: 1.6em; }
+
+/* ── home ── */
+/* Home scrolls as a last resort when the viewport is too short (landscape phones, small laptops)
+   instead of clipping the portrait, dialogue or menu. */
+#page-home {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,200,0,0.3) transparent;
+}
+#page-home::-webkit-scrollbar { width: 4px; }
+#page-home::-webkit-scrollbar-thumb { background: rgba(0,200,0,0.3); border-radius: 2px; }
+
+/* ── home menu ── */
+/* grows to fill spare height but never shrinks below its content */
+#home-menu { display: none; flex: 1 0 auto; flex-direction: column; margin-top: 1em; opacity: 0; }
+#home-menu.visible { animation: pagein 0.45s ease forwards; }
+.menu-label { margin-bottom: 0.5em; }
+/* file options stacked in a column, like RPG dialogue responses */
+.menu-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+.uplinks { margin-top: 0.6em; }
+
+/* ── NPC panel ── */
+#npc-panel {
+  display: grid;
+  /* thin portrait column on the left; dialogue above the file menu on the right */
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "portrait dialogue"
+    "portrait menu";
+  column-gap: 1.4em;
+  row-gap: 1.1em;
+  border: 1px solid rgba(0,200,0,0.3);
+  padding: 1em;
+  background: rgba(0,30,0,0.3);
+  margin-bottom: 0.4em;
+}
+#portrait-frame {
+  grid-area: portrait;
+  align-self: center;
+  position: relative;
+  /* fixed height; width follows from the aspect ratio below */
+  height: clamp(150px, 34vh, 300px);
+  height: clamp(150px, 34dvh, 300px);
+  /* Mr_Morton.png is 1400x590 with the photo in the centre ~549px and black padding either
+     side; the frame takes the photo's shape (trimmed a hair so no padding edge shows) and
+     the image covers it, so the photo always fills the frame exactly. */
+  aspect-ratio: 540 / 590;
+  border: 1px solid rgba(0,200,0,0.5);
+  background: #000;
+  overflow: hidden;
+  box-shadow: 0 0 2.5em rgba(0,200,0,0.22), inset 0 0 3em rgba(0,0,0,0.6);
+}
+#portrait-inner {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+}
+#portrait-placeholder {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 0.2em; width: 100%; height: 100%;
+}
+.ph-line {
+  font-size: 0.7em;
+  color: rgba(80,180,80,0.55);
+  text-shadow: 0 0 1ex #3f3;
+  letter-spacing: 0.1em;
+  display: block;
+  text-align: center;
+}
+/* CRT tint over portrait */
+#portrait-scanlines {
+  position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,0.18) 0px, rgba(0,0,0,0.18) 1px, transparent 1px, transparent 3px),
+              radial-gradient(ellipse 100% 100% at 50% 50%, rgba(0,200,0,0.08), rgba(0,0,0,0.4));
+}
+/* Corner brackets */
+.corner {
+  position: absolute; width: 10px; height: 10px;
+  border-color: rgba(128,255,128,0.7); border-style: solid;
+}
+.corner.tl { top: 3px; left: 3px;  border-width: 1px 0 0 1px; }
+.corner.tr { top: 3px; right: 3px; border-width: 1px 1px 0 0; }
+.corner.bl { bottom: 3px; left: 3px;  border-width: 0 0 1px 1px; }
+.corner.br { bottom: 3px; right: 3px; border-width: 0 1px 1px 0; }
+
+/* dialogue */
+#dialogue-box {
+  grid-area: dialogue;
+  align-self: end;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+#npc-menu { grid-area: menu; align-self: start; }
+#dialogue-label {
+  font-size: 0.7em;
+  color: rgba(180,255,180,0.55);
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 1ex #3f3;
+}
+#dialogue-text {
+  font-size: 0.82em;
+  line-height: 1.55;
+  color: rgba(128,255,128,0.9);
+  text-shadow: 0 0 1ex #3f3, 0 0 2px rgba(255,255,255,0.4);
+  border-left: 2px solid rgba(0,200,0,0.35);
+  padding-left: 0.7em;
+}
+.menu-btn {
+  background: transparent;
+  border: 1px solid rgba(0,200,0,0.45);
+  color: rgba(128,255,128,0.85);
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+  padding: 0.55em 1em;
+  cursor: pointer;
+  text-shadow: 0 0 1ex #3f3;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  letter-spacing: 0.05em;
+  text-align: left;
+}
+.menu-btn:focus-visible,
+.back-btn:focus-visible {
+  outline: 1px solid rgba(180,255,180,0.9);
+  outline-offset: 2px;
+}
+/* hover only on real pointers so taps on touchscreens don't leave buttons stuck highlighted */
+@media (hover: hover) {
+  .menu-btn:hover {
+    background: rgba(0,200,0,0.15);
+    color: #fff;
+    border-color: rgba(128,255,128,0.9);
+  }
+}
+
+/* ── pages ── */
+.page {
+  display: none;
+  flex-direction: column;
+  height: 100%;
+  animation: pagein 0.25s ease;
+}
+.page.active { display: flex; }
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  border-bottom: 1px solid rgba(0,200,0,0.3);
+  padding-bottom: 0.6em;
+  margin-bottom: 1em;
+  flex-shrink: 0;
+}
+.back-btn {
+  background: transparent;
+  border: 1px solid rgba(0,200,0,0.45);
+  color: rgba(128,255,128,0.85);
+  font-family: 'Courier New', monospace;
+  font-size: 0.8em;
+  padding: 0.3em 0.8em;
+  cursor: pointer;
+  text-shadow: 0 0 1ex #3f3;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+@media (hover: hover) {
+  .back-btn:hover { background: rgba(0,200,0,0.15); color: #fff; }
+}
+.page-title {
+  font-size: 1em;
+  font-weight: bold;
+  color: rgba(180,255,180,1);
+  text-shadow: 0 0 1ex #3f3, 0 0 2px rgba(255,255,255,0.6);
+  letter-spacing: 0.08em;
+}
+.page-body {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,200,0,0.3) transparent;
+  padding-right: 0.4em;
+}
+.page-body::-webkit-scrollbar { width: 4px; }
+.page-body::-webkit-scrollbar-thumb { background: rgba(0,200,0,0.3); border-radius: 2px; }
+
+/* ── page content ── */
+.section-line {
+  display: block;
+  line-height: 1.65;
+  text-shadow: 0 0 1ex #3f3, 0 0 2px rgba(255,255,255,0.5);
+  white-space: pre-wrap;
+}
+.section-line::before { content: "> "; }
+.section-line.np::before { content: ""; }
+.section-line.dim { color: rgba(80,180,80,0.55); }
+.section-line.bright { color: rgba(200,255,200,1); font-weight: bold; }
+/* "Label    : value" rows — wrapped text hangs under the value, not the label */
+.section-line.kv { padding-left: 11ch; text-indent: -11ch; }
+/* decorative rule: clip on narrow screens rather than wrapping or widening the page */
+.section-line.rule { white-space: nowrap; overflow: hidden; }
+.blank-row { height: 1em; }
+
+/* ── about page ── */
+.about-block {
+  margin-bottom: 1.1em;
+}
+.about-heading {
+  font-size: 0.92em;
+  color: rgba(200,255,200,1);
+  font-weight: bold;
+  text-shadow: 0 0 1ex #3f3, 0 0 2px rgba(255,255,255,0.5);
+  margin-bottom: 0.2em;
+}
+.about-sub {
+  font-size: 0.85em;
+  color: rgba(128,255,128,0.75);
+  text-shadow: 0 0 1ex #3f3;
+}
+.about-role {
+  font-size: 0.88em;
+  color: rgba(200,255,200,1);
+  font-weight: bold;
+  text-shadow: 0 0 1ex #3f3;
+  margin-bottom: 0.3em;
+}
+.about-date {
+  color: rgba(128,255,128,0.55);
+  font-weight: normal;
+}
+.about-body {
+  font-size: 0.84em;
+  line-height: 1.7;
+  color: rgba(128,255,128,0.85);
+  text-shadow: 0 0 1ex #3f3, 0 0 2px rgba(255,255,255,0.4);
+  max-width: 72ch;
+}
+.about-divider {
+  font-size: 0.75em;
+  color: rgba(80,180,80,0.55);
+  letter-spacing: 0.1em;
+  border-top: 1px solid rgba(0,200,0,0.2);
+  padding-top: 0.6em;
+  margin-bottom: 1em;
+}
+.proj-card {
+  border: 1px solid rgba(0,180,0,0.3);
+  padding: 0.8em 1em;
+  margin-bottom: 0.9em;
+  background: rgba(0,50,0,0.2);
+}
+.proj-title { color: rgba(200,255,200,1); font-weight: bold; text-shadow: 0 0 1ex #3f3; display: block; margin-bottom: 0.3em; }
+.skill-label { color: rgba(180,255,180,0.7); }
+a { color: rgba(128,255,128,0.85); text-decoration: underline; overflow-wrap: anywhere; }
+@media (hover: hover) {
+  a:hover { color: #fff; }
+}
+
+/* ── SPECIAL cards ── */
+.special-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75em;
+  padding: 0.25em 0;
+}
+.special-card {
+  border: 1px solid rgba(0,200,0,0.35);
+  background: rgba(0,40,0,0.3);
+  padding: 0.9em 1em 1em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3em;
+}
+.special-letter {
+  font-size: 2.4em;
+  font-weight: bold;
+  color: rgba(180,255,180,1);
+  text-shadow: 0 0 2ex #3f3, 0 0 4px rgba(255,255,255,0.6);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+.special-name {
+  font-size: 0.65em;
+  letter-spacing: 0.15em;
+  color: rgba(128,255,128,0.6);
+  text-shadow: 0 0 1ex #3f3;
+  border-bottom: 1px solid rgba(0,200,0,0.25);
+  padding-bottom: 0.4em;
+  width: 100%;
+  text-align: center;
+  margin-bottom: 0.3em;
+}
+.special-list {
+  list-style: none;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+}
+.special-list li {
+  font-size: 0.78em;
+  color: rgba(128,255,128,0.85);
+  text-shadow: 0 0 1ex #3f3;
+  text-align: center;
+  line-height: 1.5;
+}
+.special-list li::before {
+  content: "· ";
+  color: rgba(0,200,0,0.4);
+}
+
+/* ── experience bullets ── */
+.about-bullets {
+  list-style: none;
+  font-size: 0.84em;
+  line-height: 1.7;
+  color: rgba(128,255,128,0.85);
+  text-shadow: 0 0 1ex #3f3, 0 0 2px rgba(255,255,255,0.4);
+  max-width: 72ch;
+}
+.about-bullets li { padding-left: 1.2em; text-indent: -1.2em; }
+.about-bullets li::before { content: "— "; color: rgba(0,200,0,0.5); }
+
+/* ── responsive ── */
+/* large desktop monitors: scale the terminal up so it doesn't look tiny */
+@media (min-width: 1600px) and (min-height: 900px) {
+  #terminal { max-width: 1000px; font-size: 1.125rem; }
+  #portrait-frame { height: clamp(150px, 34vh, 360px); height: clamp(150px, 34dvh, 360px); }
+}
+
+/* phones */
+@media (max-width: 640px) {
+  body { padding: 0.4em; }
+  #terminal { height: calc(100vh - 0.8em); height: calc(100dvh - 0.8em); padding: 1em; border-radius: 0.6em; }
+  #output { font-size: 0.8em; max-height: 20vh; max-height: 20dvh; }
+  /* portrait beside the file menu; dialogue runs full width underneath */
+  #npc-panel {
+    grid-template-areas:
+      "portrait menu"
+      "dialogue dialogue";
+    column-gap: 0.8em;
+    row-gap: 0.8em;
+    padding: 0.8em;
+  }
+  #portrait-frame { height: 150px; }
+  #dialogue-box { align-self: start; }
+  #npc-menu { align-self: center; }
+  #dialogue-text { font-size: 0.78em; }
+  #home-menu { margin-top: 0.6em; }
+  .uplinks, .menu-label { font-size: 0.85em; }
+  .menu-btn { font-size: 0.75em; padding: 0.55em 0.6em; }
+  .page-header { gap: 0.7em; }
+  .page-title { font-size: 0.85em; }
+  .section-line, .about-body, .about-bullets { font-size: 0.82em; }
+  .proj-card { padding: 0.7em 0.8em; }
+  .proj-title { font-size: 0.9em; }
+  .special-grid { grid-template-columns: repeat(2, 1fr); gap: 0.5em; }
+}
+@media (max-width: 360px) {
+  #portrait-frame { height: 120px; }
+  .special-grid { grid-template-columns: 1fr; }
+}
+
+/* laptops: typical browser viewports are 600–760px tall, so tighten vertical spacing */
+@media (min-width: 641px) and (max-height: 760px) {
+  #terminal { padding: 1.1em 1.4em; }
+  #output { font-size: 0.85em; }
+  #home-menu { margin-top: 0.6em; }
+  .uplinks { margin-top: 0.5em; }
+  #npc-panel { row-gap: 0.9em; padding: 0.8em 1em; }
+  .menu-btn { padding: 0.45em 1em; }
+}
+
+/* very short viewports (landscape phones, small browser windows) */
+@media (max-height: 560px) {
+  body { padding: 0.3em; }
+  #terminal { height: calc(100vh - 0.6em); height: calc(100dvh - 0.6em); padding: 0.8em 1em; }
+  #output { font-size: 0.8em; max-height: 20vh; max-height: 20dvh; }
+  #home-menu { margin-top: 0.4em; }
+  .uplinks, .menu-label { font-size: 0.85em; }
+  .uplinks { margin-top: 0.4em; }
+  /* one row: portrait | dialogue | file menu */
+  #npc-panel {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: "portrait dialogue menu";
+    column-gap: 1em;
+    padding: 0.6em;
+  }
+  #portrait-frame { height: clamp(100px, 38vh, 180px); height: clamp(100px, 38dvh, 180px); }
+  #dialogue-box, #npc-menu { align-self: center; }
+  #dialogue-text { font-size: 0.78em; }
+  .menu-btn { font-size: 0.8em; padding: 0.45em 0.7em; }
+  .page-header { margin-bottom: 0.6em; padding-bottom: 0.4em; }
+}
+
+/* touchscreens: comfortable tap targets */
+@media (pointer: coarse) {
+  .menu-btn { min-height: 44px; }
+  .back-btn { min-height: 36px; padding: 0.3em 1em; }
+}
+</style>
+</head>
+<body>
+<div id="terminal">
+
+  <!-- ═══ HOME ═══ -->
+  <div id="page-home" style="display:flex; flex-direction:column; height:100%; min-height:0;">
+    <div id="output" style="flex:1; overflow-y:auto; scrollbar-width:thin; padding-right:0.5em;"></div>
+    <div id="skip-hint" style="font-size:0.7em; color:rgba(80,180,80,0.45); text-align:right; letter-spacing:0.08em; text-shadow:0 0 1ex #3f3; padding-bottom:0.3em;">[SPACE / CLICK] SKIP</div>
+    <div id="home-menu">
+      <!-- Portrait (left) + dialogue and file menu (right) -->
+      <div id="npc-panel">
+        <div id="portrait-frame">
+          <div id="portrait-inner">
+            <img id="portrait-img" src="Mr_Morton.png" alt="Adrian T. Morton" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center;"/>
+          </div>
+          <div id="portrait-scanlines"></div>
+          <div class="corner tl"></div>
+          <div class="corner tr"></div>
+          <div class="corner bl"></div>
+          <div class="corner br"></div>
+        </div>
+        <div id="dialogue-box">
+          <div id="dialogue-label">ADRIAN T. MORTON //</div>
+          <div id="dialogue-text">Adrian T. Morton — backend-focused software engineer (B.S. Computer Science, FIU). Building LLM evaluation infrastructure at Genuine Labs and an over-the-air update system for a diagnostic device at Portable Diagnostic Systems. 1st place, Microsoft sponsor challenge at ShellHacks X.</div>
+        </div>
+        <div id="npc-menu">
+          <div class="line dim menu-label">SELECT FILE TO ACCESS:</div>
+          <div class="menu-grid">
+            <button class="menu-btn" onclick="goTo('projects')">[ 1 ]  PROJECTS</button>
+            <button class="menu-btn" onclick="goTo('about')">[ 2 ]  EXPERIENCE</button>
+            <button class="menu-btn" onclick="goTo('skills')">[ 3 ]  SKILLS</button>
+            <button class="menu-btn" onclick="goTo('contact')">[ 4 ]  CONTACT</button>
+          </div>
+        </div>
+      </div>
+      <!-- Quick uplinks: contact reachable without navigation -->
+      <div class="line dim np uplinks">UPLINKS :  <a href="mailto:atmorton04@gmail.com">EMAIL</a> · <a href="https://github.com/Bomoga" target="_blank">GITHUB</a> · <a href="https://www.linkedin.com/in/adrian-thomas-morton/" target="_blank">LINKEDIN</a></div>
+    </div>
+  </div>
+
+  <!-- ═══ ABOUT ═══ -->
+  <div id="page-about" class="page">
+    <div class="page-header">
+      <button class="back-btn" onclick="goHome()">◄ BACK</button>
+      <span class="page-title">// PERSONNEL FILE: MORTON, ADRIAN T.</span>
+    </div>
+    <div class="page-body">
+      <div class="about-block">
+        <p class="about-heading">B.S. Computer Science — Florida International University <span class="about-date">[Aug 2023 — May 2027]</span></p>
+        <p class="about-heading" style="font-size:0.8em; opacity:0.75;">Minor in Mathematical Sciences</p>
+        <p class="about-sub">SWE Intern @ Genuine Labs &nbsp;|&nbsp; SWE Intern @ PDS &nbsp;|&nbsp; INIT Build Team Lead</p>
+      </div>
+      <div class="about-block">
+        <p class="about-role">Honors</p>
+        <ul class="about-bullets">
+          <li>1st Place, Microsoft Sponsor Challenge — ShellHacks X (Repro).</li>
+          <li>Dean's List — Spring 2024, Summer 2024, Fall 2024, Spring 2025, Fall 2025, Spring 2026.</li>
+        </ul>
+      </div>
+      <div class="about-block">
+        <p class="about-body">Backend-first software engineer with full-stack range and hands-on AI/ML integration experience. Currently building LLM evaluation infrastructure at Genuine Labs and designing an over-the-air update system for a biotech diagnostic device at Portable Diagnostic Systems. Leads INIT Build teams from architecture to deployment.</p>
+      </div>
+      <div class="about-divider">// EXPERIENCE LOG</div>
+      <div class="about-block">
+        <p class="about-role">Genuine Labs — Software Engineering Intern <span class="about-date">[Jun 2026 — Present]</span></p>
+        <ul class="about-bullets">
+          <li>Architecting an LLM evaluation framework from the ground up for rigorous testing of production AI systems.</li>
+          <li>Designed a JSON-driven TypeScript eval runner that executes structured test cases against LLM endpoints, with both reference-based grading and LLM-as-judge scoring.</li>
+          <li>Engineered a dual-store memory architecture (mem0 + Firestore) with purge-step test isolation, enabling reproducible eval runs in CI.</li>
+          <li>Integrated Firebase Admin SDK service-account authentication to resolve cross-environment auth issues.</li>
+          <li>Built logging and failure-reporting pipelines that surface actionable signals from eval runs.</li>
+          <li>Built seeded Firebase emulator test environments and multi-turn conversation case support; adapted the pipeline across model providers via OpenRouter.</li>
+        </ul>
+      </div>
+      <div class="about-block">
+        <p class="about-role">Portable Diagnostic Systems — Software Engineering Intern <span class="about-date">[May 2026 — Present]</span></p>
+        <ul class="about-bullets">
+          <li>Designing and building the over-the-air update system for a portable diagnostic device running embedded Linux at a seed-stage biotech startup.</li>
+          <li>Enables remote firmware/software rollout across a fleet of units without physical access, eliminating manual reflashing and on-site servicing.</li>
+          <li>Authored the OTA proposal and phased implementation plan: signed update bundles, A/B partitioning with automatic rollback, and durable audit logging.</li>
+          <li>Engineered for intermittent connectivity, persistent state decoupling, and fail-safe operation in the field.</li>
+        </ul>
+      </div>
+      <div class="about-block">
+        <p class="about-role">INIT Build — Team Lead <span class="about-date">[Spring 2026]</span></p>
+        <ul class="about-bullets">
+          <li>Leading development of NoteBud, an AI-powered RAG study companion (LlamaIndex/LangChain, Gemini, Next.js, FastAPI, Neo4j, Docker, Google Cloud Storage).</li>
+          <li>Designed the full-stack architecture managing users, classes, notebooks, and source files end-to-end.</li>
+        </ul>
+      </div>
+      <div class="about-block">
+        <p class="about-role">INIT Build — Team Lead <span class="about-date">[Fall 2025]</span></p>
+        <ul class="about-bullets">
+          <li>Architected an end-to-end ML pipeline with CatBoost (R² = 0.9300), LightGBM (R² = 0.9318), and Temporal Fusion Transformer (R² = 0.9434) models.</li>
+          <li>Owned all core backend services in Python: modular design, reproducible training runs, and rigorous cross-validation with metric tracking for time-series workloads.</li>
+        </ul>
+      </div>
+      <div class="about-block">
+        <p class="about-role">AI4ALL — Fellow</p>
+        <ul class="about-bullets">
+          <li>Built production-style ML models including Random Forest and XGBoost to forecast real-world signals with high predictive accuracy.</li>
+          <li>Engineered features, performed hyperparameter tuning, and documented pipelines and results for future iteration.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SKILLS ═══ -->
+  <div id="page-skills" class="page">
+    <div class="page-header">
+      <button class="back-btn" onclick="goHome()">◄ BACK</button>
+      <span class="page-title">// SKILLS MANIFEST</span>
+    </div>
+    <div class="page-body">
+      <div class="special-grid">
+        <div class="special-card">
+          <div class="special-name">LANGUAGES</div>
+          <ul class="special-list">
+            <li>Python</li><li>C / C++</li><li>Java</li><li>SQL</li>
+            <li>TypeScript</li><li>JavaScript</li><li>C#</li><li>Rust</li>
+            <li>HTML / CSS</li><li>Arduino</li>
+          </ul>
+        </div>
+        <div class="special-card">
+          <div class="special-name">ML / AI</div>
+          <ul class="special-list">
+            <li>PyTorch</li><li>TensorFlow</li><li>LlamaIndex</li><li>LangChain</li>
+            <li>Google ADK</li><li>OpenRouter</li><li>mem0</li><li>Qiskit</li><li>NumPy</li><li>pandas</li>
+            <li>Matplotlib</li><li>Seaborn</li>
+          </ul>
+        </div>
+        <div class="special-card">
+          <div class="special-name">WEB / BACKEND</div>
+          <ul class="special-list">
+            <li>FastAPI</li><li>Next.js</li><li>React</li><li>Node.js</li>
+            <li>Express</li><li>Fastify / tRPC</li><li>Flask</li><li>RESTful API</li><li>Docker</li>
+          </ul>
+        </div>
+        <div class="special-card">
+          <div class="special-name">DATABASES</div>
+          <ul class="special-list">
+            <li>PostgreSQL</li><li>pgvector</li><li>Neo4j</li><li>MongoDB</li><li>Firestore</li>
+            <li>Vector DBs</li><li>Apache Parquet</li>
+          </ul>
+        </div>
+        <div class="special-card">
+          <div class="special-name">CLOUD / TOOLS</div>
+          <ul class="special-list">
+            <li>Google Cloud</li><li>Firebase</li><li>Git</li><li>GitHub Actions</li><li>Linux</li>
+            <li>Postman</li><li>Wireshark</li><li>Oracle VirtualBox</li>
+          </ul>
+        </div>
+        <div class="special-card">
+          <div class="special-name">CAD / DESIGN</div>
+          <ul class="special-list">
+            <li>Fusion 360</li><li>Onshape</li><li>Shapr3D</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PROJECTS ═══ -->
+  <div id="page-projects" class="page">
+    <div class="page-header">
+      <button class="back-btn" onclick="goHome()">◄ BACK</button>
+      <span class="page-title">// PROJECT DOSSIER</span>
+    </div>
+    <div class="page-body">
+      <div class="blank-row"></div>
+      <span class="section-line dim np">Full source & more at <a href="https://github.com/Bomoga" target="_blank">github.com/Bomoga</a></span>
+      <div class="blank-row" style="height:0.5em"></div>
+      <div class="proj-card">
+        <span class="proj-title">> REPRO — ShellHacks X · 1st Place, Microsoft Sponsor Challenge</span>
+        <span class="section-line np">Points AI agents at a codebase, reproduces every finding in a sandbox before reasoning about it, and repairs code with proof the fix holds. Built in 36 hours by a 4-person team.</span>
+        <div class="blank-row" style="height:0.4em"></div>
+        <span class="section-line dim np kv">Role     : Built the agentic diagnosis and autonomous repair lane</span>
+        <span class="section-line dim np kv">Stack    : TypeScript • Gemini • Docker • Fastify/tRPC • MongoDB Atlas • Semgrep</span>
+        <span class="section-line dim np kv">Features : root-cause grouping • adversarial counter-test model • sandboxed edits • verified fixes opened as GitHub PRs</span>
+      </div>
+      <div class="proj-card">
+        <span class="proj-title">> EVAL PIPELINE — Genuine Labs 2026</span>
+        <span class="section-line np">Automated evaluation harness for an AI chat product. Executes eval suites against the live chat service, grades each result, and produces structured pass/fail reports.</span>
+        <div class="blank-row" style="height:0.4em"></div>
+        <span class="section-line dim np kv">Role     : Intern project — designed and shipped end-to-end</span>
+        <span class="section-line dim np kv">Stack    : TypeScript • Node.js • Firebase emulator • OpenRouter</span>
+        <span class="section-line dim np kv">Features : deterministic graders • multi-turn cases • seeded test environments</span>
+      </div>
+      <div class="proj-card">
+        <span class="proj-title">> SPECGATE — Personal</span>
+        <span class="section-line np">Verifies AI-generated applications against machine-readable specs, emitting per-requirement verdicts with attached request/response evidence. A zero-LLM verdict path keeps every verdict reproducible.</span>
+        <div class="blank-row" style="height:0.4em"></div>
+        <span class="section-line dim np kv">Stack    : TypeScript monorepo (engine • CLI • GitHub Action • control plane)</span>
+        <span class="section-line dim np kv">Features : Next.js/Express/Prisma probe adapters • deterministic HTTP runner • pass/fail/inconclusive checks</span>
+        <span class="section-line dim np kv">Testing  : ~1,890 tests • 24-app seeded-defect corpus to measure false-positive rate</span>
+      </div>
+      <div class="proj-card">
+        <span class="proj-title">> NOTEBUD — INIT Build Spring 2026</span>
+        <span class="section-line np">AI-powered class notebook & study companion. RAG pipeline answers student questions with citations from their own course materials.</span>
+        <div class="blank-row" style="height:0.4em"></div>
+        <span class="section-line dim np kv">Role     : Team Lead — architecture to deployment</span>
+        <span class="section-line dim np kv">Stack    : Next.js • FastAPI • Neo4j • Docker • Google Cloud Storage</span>
+        <span class="section-line dim np kv">Features : LlamaIndex/LangChain + Gemini RAG • PDF/slide ingestion • groundedness scoring • cited answers</span>
+      </div>
+      <div class="proj-card">
+        <span class="proj-title">> PRENERGYZE — INIT Build Fall 2025</span>
+        <span class="section-line np">Predictive system for electric utility grid load peaks enabling dynamic pricing and resource allocation.</span>
+        <div class="blank-row" style="height:0.4em"></div>
+        <span class="section-line dim np kv">Role     : Team Lead — ML pipeline & backend services</span>
+        <span class="section-line dim np kv">Stack    : PyTorch • CatBoost • LightGBM • Temporal Fusion Transformer</span>
+        <span class="section-line dim np kv">Perf.    : R² = 0.9434 (TFT) • 0.9318 (LightGBM) • 0.9300 (CatBoost)</span>
+      </div>
+      <div class="proj-card">
+        <span class="proj-title">> OUTAGENT — Shellhacks 2025</span>
+        <span class="section-line np">High-throughput backend for utility grid ops with sub-minute situational awareness and hourly load forecasting.</span>
+        <div class="blank-row" style="height:0.4em"></div>
+        <span class="section-line dim np kv">Stack    : FastAPI • Apache Parquet • PyTorch • LightGBM</span>
+        <span class="section-line dim np kv">Features : Automated retraining • 12-horizon forecasting • custom feature eng.</span>
+      </div>
+      <div class="proj-card">
+        <span class="proj-title">> HARDLAUNCH — Sharkbyte 2025</span>
+        <span class="section-line np">Agentic AI workbench transforming founder ideas into structured business strategies through conversational intake.</span>
+        <div class="blank-row" style="height:0.4em"></div>
+        <span class="section-line dim np kv">Stack    : Google ADK • Gemini 2.5 • FastAPI • LlamaIndex</span>
+        <span class="section-line dim np kv">Features : Multi-agent system • session state mgmt • RAG + vector search</span>
+      </div>
+      <div class="proj-card">
+        <span class="proj-title">> BENJI — Software Engineering II, Summer 2026</span>
+        <span class="section-line np">Payroll management system for a local STEM education center. Streamlines logging employee hours, approving timesheets, computing pay, and generating payroll records across seven core modules.</span>
+        <div class="blank-row" style="height:0.4em"></div>
+        <span class="section-line dim np kv">Team     : 3-person academic team • full SDLC deliverables</span>
+        <span class="section-line dim np kv">Features : timesheet approval workflow • pay computation • payroll records</span>
+      </div>
+      <div class="blank-row"></div>
+    </div>
+  </div>
+
+  <!-- ═══ CONTACT ═══ -->
+  <div id="page-contact" class="page">
+    <div class="page-header">
+      <button class="back-btn" onclick="goHome()">◄ BACK</button>
+      <span class="page-title">// CONTACT UPLINK</span>
+    </div>
+    <div class="page-body">
+      <div class="blank-row"></div>
+      <span class="section-line np kv">EMAIL    : <a href="mailto:atmorton04@gmail.com">atmorton04@gmail.com</a></span>
+      <span class="section-line np kv">PHONE    : 786-897-7008</span>
+      <span class="section-line np kv">GITHUB   : <a href="https://github.com/Bomoga" target="_blank">github.com/Bomoga</a></span>
+      <span class="section-line np kv">LINKEDIN : <a href="https://www.linkedin.com/in/adrian-thomas-morton/" target="_blank">linkedin.com/in/adrian-thomas-morton</a></span>
+      <div class="blank-row"></div>
+      <span class="section-line dim np rule">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+      <span class="section-line dim np">// TRANSMISSION READY. AWAITING RESPONSE.</span>
+      <div class="blank-row"></div>
+    </div>
+  </div>
+
+</div><!-- end #terminal -->
+
+<script>
+var out = document.getElementById('output');
+var homeMenu = document.getElementById('home-menu');
+var pages = ['home','about','skills','projects','contact'];
+
+var skipIntro = false;
+
+function rnd() { return skipIntro ? 0 : (Math.random() * 22 + 8) | 0; }
+
+function typeLine(text, cls, cb) {
+  var el = document.createElement('div');
+  el.className = 'line' + (cls ? ' ' + cls : '');
+  out.appendChild(el);
+  var full = text;
+  var i = 0;
+  function next() {
+    if (i < full.length) {
+      el.textContent = full.slice(0, ++i);
+      out.scrollTop = out.scrollHeight;
+      setTimeout(next, rnd());
+    } else { if (cb) cb(); }
+  }
+  next();
+}
+
+function typeLines(lines, cb) {
+  var i = 0;
+  function step() {
+    if (i >= lines.length) { if (cb) cb(); return; }
+    var l = lines[i++];
+    if (l === '') {
+      var el = document.createElement('div');
+      el.className = 'line blank';
+      out.appendChild(el);
+      out.scrollTop = out.scrollHeight;
+      setTimeout(step, skipIntro ? 0 : 40);
+    } else {
+      typeLine(l[0], l[1], step);
+    }
+  }
+  step();
+}
+
+var boot = [
+  ['MORTCO INDUSTRIES (TM) TERMLINK PROTOCOL', 'bright'],
+  ['EMPLOYEE RECORD INTERFACE v2.3.0', ''],
+  '',
+  ['UPLINK ESTABLISHED..OK', 'dim'],
+  ['RECORD FOUND: MORTON, ADRIAN T. — SOFTWARE ENGINEER', ''],
+];
+
+var introFinished = false;
+function onIntroFinished() {
+  introFinished = true;
+  document.removeEventListener('keydown', onSkip);
+  document.removeEventListener('pointerdown', onSkip);
+  var hint = document.getElementById('skip-hint');
+  if (hint) hint.remove();
+  out.style.flex = '0 0 auto';
+  homeMenu.style.display = 'flex';
+  requestAnimationFrame(function() { homeMenu.classList.add('visible'); });
+}
+
+function onSkip(e) {
+  if (!introFinished && (e.type !== 'keydown' || e.code === 'Space')) {
+    skipIntro = true;
+  }
+}
+document.addEventListener('keydown', onSkip);
+document.addEventListener('pointerdown', onSkip);
+
+typeLines(boot, onIntroFinished);
+
+function goTo(name) {
+  document.getElementById('page-home').style.display = 'none';
+  pages.forEach(function(p) {
+    var el = document.getElementById('page-' + p);
+    if (el) el.classList.remove('active');
+  });
+  var target = document.getElementById('page-' + name);
+  if (target) target.classList.add('active');
+}
+
+function goHome() {
+  pages.forEach(function(p) {
+    var el = document.getElementById('page-' + p);
+    if (el) el.classList.remove('active');
+  });
+  var home = document.getElementById('page-home');
+  home.style.display = 'flex';
+}
+</script>
+</body>
+</html>
