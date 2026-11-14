@@ -5,6 +5,45 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Adrian T. Morton, a full-stack software engineer working across frontend, backend, databases and AI infrastructure. B.S. Computer Science, Florida International University (May 2027).">
 <title>Adrian T. Morton | Full-Stack Software Engineer</title>
+<link rel="canonical" href="https://bomoga.github.io/">
+<meta name="author" content="Adrian T. Morton">
+<meta name="theme-color" content="#050b05">
+<meta property="og:type" content="profile">
+<meta property="og:site_name" content="Adrian T. Morton">
+<meta property="og:title" content="Adrian T. Morton | Full-Stack Software Engineer">
+<meta property="og:description" content="Full-stack engineer across frontend, backend, databases and AI infrastructure. B.S. Computer Science, FIU, May 2027. Open to new-grad SWE roles and Spring 2027 internships.">
+<meta property="og:url" content="https://bomoga.github.io/">
+<meta property="og:image" content="https://bomoga.github.io/Mr_Morton.png">
+<meta property="og:image:width" content="1400">
+<meta property="og:image:height" content="590">
+<meta property="og:image:alt" content="Portrait of Adrian T. Morton">
+<meta property="profile:first_name" content="Adrian">
+<meta property="profile:last_name" content="Morton">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Adrian T. Morton | Full-Stack Software Engineer">
+<meta name="twitter:description" content="Full-stack engineer across frontend, backend, databases and AI infrastructure. B.S. Computer Science, FIU, May 2027.">
+<meta name="twitter:image" content="https://bomoga.github.io/Mr_Morton.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Adrian T. Morton",
+  "givenName": "Adrian",
+  "familyName": "Morton",
+  "jobTitle": "Full-Stack Software Engineer",
+  "description": "Full-stack software engineer working across frontend, backend, databases and AI infrastructure.",
+  "url": "https://bomoga.github.io/",
+  "image": "https://bomoga.github.io/Mr_Morton.png",
+  "address": { "@type": "PostalAddress", "addressLocality": "Miami", "addressRegion": "FL", "addressCountry": "US" },
+  "alumniOf": { "@type": "CollegeOrUniversity", "name": "Florida International University" },
+  "sameAs": [
+    "https://github.com/Bomoga",
+    "https://www.linkedin.com/in/adrian-thomas-morton/"
+  ],
+  "knowsAbout": ["TypeScript", "Python", "React", "Next.js", "Node.js", "FastAPI", "PostgreSQL", "Docker", "PyTorch", "LLM evaluation"]
+}
+</script>
+<script>document.documentElement.classList.add('js');</script>
 <link rel="icon" type="image/png" href="chip.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -43,7 +82,8 @@ body {
 }
 a { color: var(--link); }
 a:hover { color: var(--link-hover); }
-a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 img { max-width: 100%; }
 
 /* CRT scanlines */
@@ -61,10 +101,23 @@ img { max-width: 100%; }
 .site-header { border-bottom: 1px solid #1a331a; background: var(--bg); position: sticky; top: 0; z-index: 40; }
 .site-nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding-top: 14px; padding-bottom: 14px; }
 .brand { font-family: var(--mono); font-weight: 600; font-size: 15px; letter-spacing: 0.08em; color: var(--accent); text-decoration: none; }
-.nav-links { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; font-family: var(--mono); font-size: 14px; }
-.nav-links a { color: var(--text); text-decoration: none; padding: 12px 0; }
-.nav-links a:hover { color: var(--accent); }
+.nav-links { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; font-family: var(--mono); font-size: 14px; }
+.nav-links a { color: var(--text); text-decoration: none; padding: 12px 0; transition: color 0.15s; }
+.nav-links a:hover, .nav-links a[aria-current] { color: var(--accent); }
 .nav-links a.btn-primary { color: var(--bg); padding: 10px 16px; min-height: 0; }
+/* Marker that slides to the section being read */
+.nav-ind {
+  position: absolute; left: 0; top: 0; height: 2px; width: 1px; pointer-events: none;
+  background: var(--accent); box-shadow: 0 0 8px var(--accent);
+  transform-origin: 0 50%; opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.2s;
+}
+.nav-ind.on { opacity: 1; }
+/* Reading progress along the bottom edge of the header */
+.progress {
+  position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; pointer-events: none;
+  background: var(--accent); transform-origin: 0 50%; transform: scaleX(var(--scroll, 0));
+}
 
 /* Buttons */
 .btn {
@@ -72,25 +125,54 @@ img { max-width: 100%; }
   min-height: 48px; padding: 0 20px; border-radius: 2px;
   font-family: var(--mono); font-size: 15px; text-decoration: none;
   border: 1px solid var(--btn-line); color: var(--text);
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s, transform 0.08s;
 }
 .btn:hover { border-color: var(--accent); color: var(--text-strong); }
+.btn:active { transform: translateY(1px); }
 .btn-primary { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 600; }
-.btn-primary:hover { background: #8dff8d; color: var(--bg); }
+.btn-primary:hover { background: #8dff8d; color: var(--bg); box-shadow: 0 0 18px rgba(51, 255, 51, 0.35); }
 .btn-outline { border-color: var(--accent); color: var(--text-strong); font-weight: 500; }
 
 /* Hero */
 .hero { display: flex; flex-wrap: wrap; gap: 48px; align-items: center; padding: 72px 0 56px; }
 .portrait { flex: 1 1 280px; max-width: 360px; margin: 0; border: 1px solid var(--line); background: #000; padding: 10px; }
-.portrait img { display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: 50% 20%; }
+.portrait-frame { position: relative; overflow: hidden; }
+.portrait img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; object-position: 50% 20%; }
+.scanbar { position: absolute; left: 0; right: 0; top: 0; height: 3px; background: var(--link-hover); box-shadow: 0 0 14px 3px var(--accent); opacity: 0; pointer-events: none; }
 .portrait figcaption { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 12px; color: var(--text-faint); padding: 10px 2px 0; }
-.hero-body { flex: 999 1 480px; min-width: 0; display: flex; flex-direction: column; gap: 22px; }
+.hero-body { flex: 999 1 480px; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
 .eyebrow { font-family: var(--mono); font-size: 14px; letter-spacing: 0.06em; color: var(--accent); margin: 0; }
-.hero h1 { margin: 0; font-family: var(--mono); font-weight: 600; font-size: clamp(30px, 4.4vw, 54px); line-height: 1.1; letter-spacing: -0.01em; color: var(--text-strong); }
-.hero-sub { margin: 0; font-size: 19px; color: #b9d6b4; max-width: 640px; }
+.eyebrow .type { display: inline-block; max-width: 100%; }
+.hero h1 { margin: 0; font-family: var(--mono); font-weight: 600; font-size: clamp(34px, 5.2vw, 64px); line-height: 1.05; letter-spacing: -0.02em; color: var(--text-strong); }
+.hero-meta { display: none; }
+.hero-lead { margin: 0; font-family: var(--mono); font-weight: 500; font-size: clamp(19px, 2.1vw, 25px); line-height: 1.3; color: var(--text-strong); max-width: 620px; }
+.hero-sub { margin: 0; font-size: 18px; color: #b9d6b4; max-width: 640px; }
 .status { display: inline-flex; align-self: flex-start; align-items: center; gap: 10px; margin: 0; border: 1px solid var(--line); background: #0a150a; padding: 8px 14px; font-family: var(--mono); font-size: 14px; color: var(--text-strong); }
-.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: 0 0 auto; box-shadow: 0 0 6px var(--accent); }
+.status-dot { position: relative; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: 0 0 auto; box-shadow: 0 0 6px var(--accent); }
+.status-dot::after { content: ""; position: absolute; inset: -1px; border-radius: 50%; border: 1px solid var(--accent); opacity: 0; }
 .cta-row { display: flex; flex-wrap: wrap; gap: 12px; padding-top: 6px; }
-.mobile-id { display: none; }
+
+/* Load sequence: the file powers on once, top to bottom. Pure CSS, so nothing stays hidden if scripts fail. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes power-on { 0% { opacity: 0; } 35% { opacity: 0.85; } 50% { opacity: 0.2; } 100% { opacity: 1; } }
+  @keyframes type-in { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+  @keyframes scan-in {
+    0% { clip-path: inset(0 0 100% 0); filter: brightness(1.9) contrast(1.3); }
+    70% { clip-path: inset(0 0 0 0); filter: brightness(1.9) contrast(1.3); }
+    100% { clip-path: inset(0 0 0 0); filter: none; }
+  }
+  @keyframes scan-bar { 0% { top: 0; opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+  @keyframes ping { 0% { transform: scale(1); opacity: 0.8; } 70%, 100% { transform: scale(3.2); opacity: 0; } }
+  .eyebrow .type { animation: type-in 0.6s steps(46, end) both; }
+  .portrait img { animation: scan-in 1s cubic-bezier(0.4, 0, 0.2, 1) both; }
+  .scanbar { animation: scan-bar 0.7s cubic-bezier(0.4, 0, 0.2, 1) both; }
+  .boot { animation: power-on 0.45s linear both; animation-delay: calc(var(--i) * 80ms + 250ms); }
+  .highlight:nth-child(1) { --i: 5; }
+  .highlight:nth-child(2) { --i: 6; }
+  .highlight:nth-child(3) { --i: 7; }
+  .highlight:nth-child(4) { --i: 8; }
+  .status-dot::after { animation: ping 2.4s ease-out 1.6s infinite; }
+}
 
 /* Highlights */
 .highlights { display: flex; flex-wrap: wrap; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin: 0; }
@@ -106,6 +188,25 @@ img { max-width: 100%; }
 .section h2 .num { color: var(--accent); }
 .section-head a { font-family: var(--mono); font-size: 14px; }
 section[id] { scroll-margin-top: 70px; }
+
+/* Stack filter */
+.filter { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 20px; font-family: var(--mono); font-size: 13px; }
+.filter[hidden] { display: none; }
+.filter-label { color: var(--text-faint); margin-right: 4px; }
+.filter-btn {
+  font: inherit; color: var(--text); background: transparent; cursor: pointer;
+  border: 1px solid var(--btn-line); border-radius: 2px; min-height: 36px; padding: 0 12px;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+.filter-btn:hover { border-color: var(--accent); color: var(--text-strong); }
+.filter-btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 600; }
+.filter-count { margin: 0 0 0 auto; color: var(--text-faint); }
+.proj { transition: opacity 0.3s, border-color 0.3s; }
+.proj.is-dim { opacity: 0.26; }
+.card.is-match { border-color: var(--accent); }
+.tok { transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
+.chips li.is-hit { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 600; }
+.more-stack .is-hit { color: var(--accent); }
 
 /* Featured projects */
 .cards { display: flex; flex-wrap: wrap; gap: 20px; }
@@ -127,7 +228,20 @@ section[id] { scroll-margin-top: 70px; }
 .more-what { flex: 1 1 380px; min-width: 0; font-size: 15px; color: var(--text-body); }
 .more-stack { flex: 0 1 300px; font-family: var(--mono); font-size: 12px; color: var(--text-faint); }
 
-/* Experience */
+/* Experience: a rail that fills as the page is read; nodes light as each role is reached, current roles keep pulsing */
+.timeline { position: relative; padding-left: 34px; --p: 1; }
+.js .timeline { --p: 0; }
+.timeline::before { content: ""; position: absolute; left: 5px; top: 0; bottom: 0; width: 1px; background: var(--line); }
+.rail-fill { position: absolute; left: 4px; top: 0; bottom: 0; width: 3px; background: var(--accent); box-shadow: 0 0 8px rgba(51, 255, 51, 0.6); transform-origin: 50% 0; transform: scaleY(var(--p)); }
+.job { position: relative; }
+.job::before, .job[data-live]::after { content: ""; position: absolute; left: -34px; top: 33px; width: 11px; height: 11px; box-sizing: border-box; border: 1px solid var(--accent); }
+.job::before { background: var(--accent); box-shadow: 0 0 8px rgba(51, 255, 51, 0.7); transition: background-color 0.25s, border-color 0.25s, box-shadow 0.25s; }
+.job[data-live]::after { opacity: 0; pointer-events: none; }
+.js .job:not(.is-on)::before { background: var(--bg); border-color: var(--btn-line); box-shadow: none; }
+.js .job[data-live]:not(.is-on)::after { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .job[data-live]::after { animation: ping 2.4s ease-out infinite; }
+}
 .job { display: flex; flex-wrap: wrap; gap: 12px 40px; padding: 28px 0; border-top: 1px solid var(--line); }
 .job-meta { flex: 1 1 260px; max-width: 320px; display: flex; flex-direction: column; gap: 4px; }
 .job-when { font-family: var(--mono); font-size: 13px; color: var(--accent); }
@@ -159,6 +273,15 @@ section[id] { scroll-margin-top: 70px; }
 .contact-main { flex: 1 1 420px; display: flex; flex-direction: column; gap: 14px; }
 .contact h2 { margin: 0; font-family: var(--mono); font-size: 34px; font-weight: 600; color: var(--text-strong); }
 .contact-email { font-family: var(--mono); font-size: 22px; overflow-wrap: anywhere; }
+.email-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.copy-btn {
+  font-family: var(--mono); font-size: 13px; color: var(--text); background: transparent; cursor: pointer;
+  border: 1px solid var(--btn-line); border-radius: 2px; min-height: 36px; min-width: 104px; padding: 0 12px;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+.copy-btn[hidden] { display: none; }
+.copy-btn:hover { border-color: var(--accent); color: var(--text-strong); }
+.copy-btn.is-done { background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 600; }
 .contact-list { flex: 0 1 340px; margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 10px 12px; font-family: var(--mono); font-size: 15px; }
 .contact-list dt { color: var(--text-faint); }
 .contact-list dd { margin: 0; overflow-wrap: anywhere; }
@@ -169,18 +292,23 @@ footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12
 @media (max-width: 640px) {
   body { font-size: 16px; }
   .wrap { padding: 0 16px; }
-  .nav-links a:not(.btn-primary) { display: none; }
-  .site-nav { padding-top: 8px; padding-bottom: 8px; }
-  .hero { padding: 24px 0 8px; gap: 16px; }
-  .portrait { display: none; }
-  .mobile-id { display: flex; gap: 14px; align-items: center; }
-  .mobile-id img { width: 96px; height: 120px; object-fit: cover; object-position: 50% 15%; border: 1px solid var(--line); background: #000; flex: 0 0 auto; }
-  .mobile-id strong { display: block; font-family: var(--mono); font-size: 20px; color: var(--text-strong); }
-  .mobile-id span { font-size: 14px; color: var(--text-muted); }
-  .hero-body { gap: 16px; }
+  .nav-links a:not(.btn-primary), .nav-ind { display: none; }
+  .site-nav { padding-top: 8px; padding-bottom: 8px; flex-wrap: nowrap; }
+  .brand { font-size: 13px; white-space: nowrap; }
+  .nav-links { flex: 0 0 auto; }
+  /* Photo and name share the first row; everything else spans the full width */
+  .hero { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 16px 14px; align-items: start; padding: 24px 0 8px; }
+  .hero-body { display: contents; }
+  .portrait { grid-column: 1; grid-row: 1; max-width: none; padding: 0; }
+  .portrait img { height: 120px; aspect-ratio: auto; object-position: 50% 15%; }
+  .portrait figcaption { display: none; }
+  .hero-id { grid-column: 2; grid-row: 1; align-self: center; }
+  .hero-lead, .hero-sub, .status, .cta-row { grid-column: 1 / -1; }
   .hero h1 { font-size: 27px; line-height: 1.15; }
+  .hero-meta { display: block; margin: 6px 0 0; font-size: 14px; color: var(--text-muted); }
+  .hero-lead { font-size: 18px; }
   .hero-sub { font-size: 16px; }
-  .status { font-size: 13px; padding: 8px 12px; align-items: flex-start; }
+  .status { font-size: 13px; padding: 8px 12px; align-items: flex-start; justify-self: start; }
   .status-dot { margin-top: 6px; }
   .hero .eyebrow { display: none; }
   .cta-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
@@ -198,6 +326,10 @@ footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12
   .card p { font-size: 15px; }
   .more-name { flex-basis: 100%; }
   .more-stack { flex-basis: 100%; }
+  .filter-btn { min-height: 40px; }
+  .filter-count { flex-basis: 100%; margin-left: 0; }
+  .timeline { padding-left: 24px; }
+  .job::before, .job[data-live]::after { left: -24px; top: 22px; }
   .job { padding: 18px 0; }
   .job-body p { font-size: 16px; }
   .job-body ul { font-size: 15px; }
@@ -208,6 +340,10 @@ footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12
   .contact h2 { font-size: 21px; }
   .contact-email { font-size: 16px; }
   .contact-list { font-size: 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation: none !important; }
 }
 </style>
 </head>
@@ -222,29 +358,35 @@ footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12
       <a href="#projects">Projects</a>
       <a href="#experience">Experience</a>
       <a href="#skills">Skills</a>
+      <a href="#education">Education</a>
       <a href="#contact">Contact</a>
       <a class="btn btn-primary" href="AdrianMortonResume.pdf">Résumé (PDF)</a>
+      <span class="nav-ind" aria-hidden="true"></span>
     </div>
   </nav>
+  <div class="progress" aria-hidden="true"></div>
 </header>
 
 <main id="main" class="wrap">
 
   <section id="top" class="hero" aria-labelledby="hero-h">
     <figure class="portrait">
-      <img src="Mr_Morton.png" alt="Portrait of Adrian T. Morton" width="1400" height="590">
+      <div class="portrait-frame">
+        <img src="Mr_Morton.png" alt="Portrait of Adrian T. Morton" width="1400" height="590" fetchpriority="high">
+        <span class="scanbar" aria-hidden="true"></span>
+      </div>
       <figcaption><span>ID: MORTON, A.T.</span><span>MIAMI, FL</span></figcaption>
     </figure>
     <div class="hero-body">
-      <div class="mobile-id">
-        <img src="Mr_Morton.png" alt="" width="1400" height="590">
-        <div><strong>Adrian T. Morton</strong><span>Software Engineer · B.S. CS, FIU · May 2027</span></div>
+      <p class="eyebrow"><span class="type">// PERSONNEL FILE: FULL-STACK SOFTWARE ENGINEER</span></p>
+      <div class="hero-id">
+        <h1 id="hero-h" data-decode="load">Adrian T. Morton</h1>
+        <p class="hero-meta">Software Engineer · B.S. CS, FIU · May 2027</p>
       </div>
-      <p class="eyebrow">// PERSONNEL FILE: FULL-STACK SOFTWARE ENGINEER</p>
-      <h1 id="hero-h">Full-stack engineer across frontend, backend, databases and AI infrastructure.</h1>
-      <p class="hero-sub">Adrian T. Morton. B.S. Computer Science at FIU, graduating May 2027. Currently building LLM evaluation infrastructure at Genuine Labs and an over-the-air update system at Portable Diagnostic Systems.</p>
-      <p class="status"><span class="status-dot" aria-hidden="true"></span><span>STATUS: Open to new-grad SWE roles (from May 2027) · Spring 2027 internships</span></p>
-      <div class="cta-row">
+      <p class="hero-lead boot" style="--i: 1">Full-stack engineer across frontend, backend, databases and AI infrastructure.</p>
+      <p class="hero-sub boot" style="--i: 2">B.S. Computer Science at FIU, graduating May 2027. Currently building LLM evaluation infrastructure at Genuine Labs and an over-the-air update system at Portable Diagnostic Systems.</p>
+      <p class="status boot" style="--i: 3"><span class="status-dot" aria-hidden="true"></span><span>STATUS: Open to new-grad SWE roles (from May 2027) · Spring 2027 internships</span></p>
+      <div class="cta-row boot" style="--i: 4">
         <a class="btn btn-primary" href="mailto:atmorton04@gmail.com">Email me</a>
         <a class="btn btn-outline" href="AdrianMortonResume.pdf">Download résumé</a>
         <a class="btn" href="https://github.com/Bomoga">GitHub ↗</a>
@@ -254,16 +396,23 @@ footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12
   </section>
 
   <dl class="highlights" aria-label="Highlights">
-    <div class="highlight"><dt>2× 1st Place</dt><dd>Microsoft challenge, ShellHacks X · Best Use of Prune API, SharkByte 2026</dd></div>
-    <div class="highlight"><dt>2 internships</dt><dd>Concurrent SWE roles in 2026: LLM evals &amp; embedded Linux OTA</dd></div>
-    <div class="highlight"><dt>3× Team Lead</dt><dd>INIT Build, Fall 2025 – present · current project sponsored by Base44</dd></div>
-    <div class="highlight"><dt>6× Dean's List</dt><dd>FIU, Spring 2024 – Spring 2026</dd></div>
+    <div class="highlight boot"><dt>2× 1st Place</dt><dd>Microsoft challenge, ShellHacks X · Best Use of Prune API, SharkByte 2026</dd></div>
+    <div class="highlight boot"><dt>2 internships</dt><dd>Concurrent SWE roles in 2026: LLM evals &amp; embedded Linux OTA</dd></div>
+    <div class="highlight boot"><dt>3× Team Lead</dt><dd>INIT Build, Fall 2025 – present · current project sponsored by Base44</dd></div>
+    <div class="highlight boot"><dt>6× Dean's List</dt><dd>FIU, Spring 2024 – Spring 2026</dd></div>
   </dl>
 
   <section id="projects" class="section" aria-labelledby="proj-h">
     <div class="section-head">
-      <h2 id="proj-h"><span class="num">01 /</span> Selected projects</h2>
+      <h2 id="proj-h"><span class="num">01 /</span> <span data-decode>Selected projects</span></h2>
       <a href="https://github.com/Bomoga">All source on github.com/Bomoga ↗</a>
+    </div>
+
+    <!-- Buttons are built by the script from the stacks listed on the projects below -->
+    <div class="filter" role="group" aria-label="Filter projects by stack" hidden>
+      <span class="filter-label">Filter by stack</span>
+      <button type="button" class="filter-btn" data-filter="" aria-pressed="true">All</button>
+      <p class="filter-count" role="status"></p>
     </div>
 
     <div class="cards">
@@ -339,9 +488,11 @@ footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12
   </section>
 
   <section id="experience" class="section" aria-labelledby="exp-h">
-    <div class="section-head"><h2 id="exp-h"><span class="num">02 /</span> Experience</h2></div>
+    <div class="section-head"><h2 id="exp-h"><span class="num">02 /</span> <span data-decode>Experience</span></h2></div>
 
-    <div class="job">
+    <div class="timeline">
+      <span class="rail-fill" aria-hidden="true"></span>
+    <div class="job" data-live>
       <div class="job-meta">
         <div class="job-when">JUN 2026 – PRESENT</div>
         <h3 class="job-org">Genuine Labs</h3>
@@ -357,7 +508,7 @@ footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12
       </div>
     </div>
 
-    <div class="job">
+    <div class="job" data-live>
       <div class="job-meta">
         <div class="job-when">MAY 2026 – PRESENT</div>
         <h3 class="job-org">Portable Diagnostic Systems</h3>
@@ -373,7 +524,7 @@ footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12
       </div>
     </div>
 
-    <div class="job">
+    <div class="job" data-live>
       <div class="job-meta">
         <div class="job-when">FALL 2025 – PRESENT</div>
         <h3 class="job-org">INIT Build</h3>
@@ -402,10 +553,11 @@ footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12
         </ul>
       </div>
     </div>
+    </div>
   </section>
 
   <section id="skills" class="section" aria-labelledby="skills-h">
-    <div class="section-head"><h2 id="skills-h"><span class="num">03 /</span> Skills</h2></div>
+    <div class="section-head"><h2 id="skills-h"><span class="num">03 /</span> <span data-decode>Skills</span></h2></div>
     <div class="core">
       <span class="core-label">DAILY DRIVERS</span>
       <ul>
@@ -425,7 +577,7 @@ footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12
   </section>
 
   <section id="education" class="section" aria-labelledby="edu-h">
-    <div class="section-head"><h2 id="edu-h"><span class="num">04 /</span> Education &amp; honors</h2></div>
+    <div class="section-head"><h2 id="edu-h"><span class="num">04 /</span> <span data-decode>Education &amp; honors</span></h2></div>
     <div class="edu">
       <div>
         <h3 class="edu-school">Florida International University</h3>
@@ -447,7 +599,11 @@ footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12
     <div class="contact-main">
       <p class="eyebrow">// CONTACT UPLINK</p>
       <h2 id="contact-h">Hiring across the stack, from frontend to AI infra? Let's talk.</h2>
-      <a class="contact-email" href="mailto:atmorton04@gmail.com">atmorton04@gmail.com</a>
+      <div class="email-row">
+        <a class="contact-email" href="mailto:atmorton04@gmail.com">atmorton04@gmail.com</a>
+        <button type="button" class="copy-btn" data-copy="atmorton04@gmail.com" hidden>Copy email</button>
+        <span class="sr" role="status"></span>
+      </div>
     </div>
     <dl class="contact-list">
       <dt>PHONE</dt><dd><a href="tel:+17868977008">786-897-7008</a></dd>
@@ -463,5 +619,241 @@ footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12
   </footer>
 
 </main>
+
+<script>
+(function () {
+  'use strict';
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var $ = function (sel, root) { return (root || document).querySelector(sel); };
+  var $$ = function (sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); };
+
+  /* Decode: text resolves left to right out of noise. The real text stays readable to
+     screen readers the whole time, and the monospace face keeps the width from shifting. */
+  var GLYPHS = 'ABCDEFGHJKLMNPQRSTUVWXYZ0123456789#/<>_';
+  function decode(el, duration) {
+    if (reduce || el.dataset.decoding) return;
+    var text = el.textContent;
+    el.dataset.decoding = '1';
+    el.innerHTML = '<span class="sr"></span><span aria-hidden="true"></span>';
+    el.firstChild.textContent = text;
+    var out = el.lastChild;
+    var start = performance.now();
+    var last = 0;
+    function frame(now) {
+      var t = Math.min((now - start) / duration, 1);
+      if (t < 1 && now - last < 40) return requestAnimationFrame(frame);
+      last = now;
+      if (t === 1) {
+        el.textContent = text;
+        delete el.dataset.decoding;
+        return;
+      }
+      var done = Math.floor(t * text.length);
+      var s = text.slice(0, done);
+      for (var i = done; i < text.length; i++) {
+        s += text[i] === ' ' ? ' ' : GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+      }
+      out.textContent = s;
+      requestAnimationFrame(frame);
+    }
+    out.textContent = text.replace(/\S/g, '_');
+    requestAnimationFrame(frame);
+  }
+
+  var loadTarget = $('[data-decode="load"]');
+  if (loadTarget) setTimeout(function () { decode(loadTarget, 650); }, 120);
+
+  if ('IntersectionObserver' in window) {
+    var seen = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        seen.unobserve(e.target);
+        decode(e.target, 420);
+      });
+    }, { rootMargin: '0px 0px -12% 0px' });
+    $$('[data-decode]:not([data-decode="load"])').forEach(function (el) { seen.observe(el); });
+  }
+
+  /* Scroll-linked pieces: header progress, nav marker, experience rail */
+  var header = $('.site-header');
+  var navLinks = $$('.nav-links a[href^="#"]');
+  var marker = $('.nav-ind');
+  var sections = navLinks.map(function (a) { return document.getElementById(a.getAttribute('href').slice(1)); });
+  var timeline = $('.timeline');
+  var jobs = $$('.job', timeline);
+  var current = null;
+
+  function placeMarker() {
+    if (!marker) return;
+    if (!current) { marker.classList.remove('on'); return; }
+    marker.style.transform = 'translate(' + current.offsetLeft + 'px,' + (current.offsetTop + current.offsetHeight - 8) + 'px) scaleX(' + current.offsetWidth + ')';
+    marker.classList.add('on');
+  }
+
+  function update() {
+    ticking = false;
+    var doc = document.documentElement;
+    var max = doc.scrollHeight - window.innerHeight;
+    header.style.setProperty('--scroll', max > 0 ? Math.min(window.scrollY / max, 1).toFixed(4) : 0);
+
+    var line = window.innerHeight * 0.35;
+    var active = null;
+    sections.forEach(function (sec, i) {
+      if (sec && sec.getBoundingClientRect().top <= line) active = navLinks[i];
+    });
+    if (max > 0 && window.scrollY >= max - 2) active = navLinks[navLinks.length - 1];
+    if (active !== current) {
+      if (current) current.removeAttribute('aria-current');
+      if (active) active.setAttribute('aria-current', 'true');
+      current = active;
+      placeMarker();
+    }
+
+    if (timeline) {
+      var r = timeline.getBoundingClientRect();
+      var reach = window.innerHeight * 0.62 - r.top;
+      var p = Math.max(0, Math.min(reach / r.height, 1));
+      timeline.style.setProperty('--p', p.toFixed(4));
+      jobs.forEach(function (job) {
+        job.classList.toggle('is-on', reach >= job.offsetTop + 30);
+      });
+    }
+  }
+  var ticking = false;
+  function queue() { if (!ticking) { ticking = true; requestAnimationFrame(update); } }
+  window.addEventListener('scroll', queue, { passive: true });
+  window.addEventListener('resize', function () { queue(); placeMarker(); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(placeMarker);
+  update();
+
+  /* Stack filter: buttons come from the stacks already listed on each project,
+     so a content update never needs a second edit here. */
+  var bar = $('.filter');
+  var projects = $$('.card, .more > li').map(function (el) {
+    el.classList.add('proj');
+    var toks;
+    var chips = $$('.chips li', el);
+    if (chips.length) {
+      toks = chips;
+    } else {
+      var stack = $('.more-stack', el);
+      var parts = stack ? stack.textContent.split(' · ') : [];
+      if (stack) {
+        stack.textContent = '';
+        parts.forEach(function (part, i) {
+          if (i) stack.appendChild(document.createTextNode(' · '));
+          var span = document.createElement('span');
+          span.textContent = part;
+          stack.appendChild(span);
+        });
+      }
+      toks = stack ? $$('span', stack) : [];
+    }
+    toks.forEach(function (t) {
+      t.classList.add('tok');
+      /* "React 19" and "Gemini 2.5" count as React and Gemini */
+      t.dataset.key = t.textContent.trim().replace(/\s+\d[\d.]*$/, '').toLowerCase();
+    });
+    return { el: el, toks: toks };
+  });
+
+  if (bar && projects.length) {
+    var tally = {};
+    projects.forEach(function (p) {
+      var mine = {};
+      p.toks.forEach(function (t) {
+        var k = t.dataset.key;
+        if (mine[k]) return;
+        mine[k] = true;
+        var label = t.textContent.trim().replace(/\s+\d[\d.]*$/, '');
+        tally[k] = tally[k] || { key: k, label: label, n: 0 };
+        tally[k].n++;
+      });
+    });
+    var shared = Object.keys(tally).map(function (k) { return tally[k]; })
+      .filter(function (s) { return s.n > 1; })
+      .sort(function (a, b) { return b.n - a.n; })
+      .slice(0, 7);
+    var count = $('.filter-count', bar);
+    shared.forEach(function (s) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'filter-btn';
+      b.dataset.filter = s.key;
+      b.setAttribute('aria-pressed', 'false');
+      b.textContent = s.label;
+      bar.insertBefore(b, count);
+    });
+
+    function apply(key, label) {
+      var hits = 0;
+      projects.forEach(function (p) {
+        var match = false;
+        p.toks.forEach(function (t) {
+          var hit = !!key && t.dataset.key === key;
+          t.classList.toggle('is-hit', hit);
+          if (hit) match = true;
+        });
+        if (match) hits++;
+        p.el.classList.toggle('is-dim', !!key && !match);
+        p.el.classList.toggle('is-match', !!key && match);
+      });
+      $$('.filter-btn', bar).forEach(function (b) {
+        b.setAttribute('aria-pressed', String(b.dataset.filter === key));
+      });
+      count.textContent = key
+        ? hits + ' of ' + projects.length + ' projects use ' + label
+        : projects.length + ' projects';
+    }
+    bar.addEventListener('click', function (e) {
+      var b = e.target.closest('.filter-btn');
+      if (!b) return;
+      /* Pressing the active filter again clears it */
+      var key = b.getAttribute('aria-pressed') === 'true' ? '' : b.dataset.filter;
+      apply(key, b.textContent);
+    });
+    if (shared.length) { bar.hidden = false; apply('', ''); }
+  }
+
+  /* Copy email: the button confirms with the same word it promised */
+  var copy = $('.copy-btn');
+  if (copy && navigator.clipboard && navigator.clipboard.writeText) {
+    var status = copy.nextElementSibling;
+    var idle = copy.textContent;
+    var timer;
+    copy.hidden = false;
+    var address = $('.contact-email');
+    function copied() {
+      copy.textContent = 'Copied';
+      copy.classList.add('is-done');
+      if (status) status.textContent = 'Email address copied';
+    }
+    copy.addEventListener('click', function () {
+      navigator.clipboard.writeText(copy.dataset.copy).then(copied, function () {
+        /* Clipboard blocked: select the address so one keypress still copies it */
+        var range = document.createRange();
+        range.selectNodeContents(address);
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        var ok = false;
+        try { ok = document.execCommand('copy'); } catch (err) {}
+        if (ok) { sel.removeAllRanges(); copied(); }
+        else {
+          copy.textContent = 'Address selected';
+          if (status) status.textContent = 'Email address selected. Press Ctrl+C or Cmd+C to copy.';
+        }
+      }).then(function () {
+        clearTimeout(timer);
+        timer = setTimeout(function () {
+          copy.textContent = idle;
+          copy.classList.remove('is-done');
+          if (status) status.textContent = '';
+        }, 2000);
+      });
+    });
+  }
+})();
+</script>
 </body>
 </html>
